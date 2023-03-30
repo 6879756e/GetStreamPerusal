@@ -27,7 +27,7 @@ fun LoginScreen() {
         sheetContent = { SheetContent() },
         scaffoldState = scaffoldState,
         sheetPeekHeight = 0.dp,
-        sheetShape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp)
+        sheetShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
     ) {
         LayoutContent(onButtonClick = {
             scope.launch { scaffoldState.bottomSheetState.expand() }
@@ -60,7 +60,7 @@ fun SheetContent() = Column(
 private fun ColumnScope.BottomSheetHandle() = Box(
     modifier = Modifier
         .background(color = Color(0x88777777), shape = CircleShape)
-        .width(24.dp)
+        .width(36.dp)
         .height(8.dp)
         .align(Alignment.CenterHorizontally)
         .padding(top = 24.dp, bottom = 24.dp)
