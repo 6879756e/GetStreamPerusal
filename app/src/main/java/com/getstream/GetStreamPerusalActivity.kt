@@ -21,7 +21,7 @@ import com.getstream.ui.theme.GetStreamPerusalTheme
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class StartActivity : ComponentActivity() {
+class GetStreamPerusalActivity : ComponentActivity() {
 
     private val onFinishLoadingListener = ViewTreeObserver.OnPreDrawListener { false }
 
