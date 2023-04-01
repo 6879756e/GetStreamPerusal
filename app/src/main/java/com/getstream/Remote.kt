@@ -17,23 +17,7 @@ import timber.log.Timber
  * whether an email address already exists (aws dynamoDB table is used).
  */
 
-private val emailCheckRetrofit by lazy {
-    buildRetrofitInstance(EMAIL_EXISTS_BASE_URL)
-}
-
-val emailCheckApi by lazy {
-    emailCheckRetrofit.create(EmailCheckAPI::class.java)
-}
-
 private val signUpRetrofit by lazy {
-    buildRetrofitInstance(SIGN_UP_BASE_URL)
-}
-
-val signUpEmailApi by lazy {
-    signUpRetrofit.create(SignUpEmailApi::class.java)
-}
-
-private fun buildRetrofitInstance(baseUrl: String): Retrofit {
     val logging = HttpLoggingInterceptor()
     logging.setLevel(HttpLoggingInterceptor.Level.BODY)
 
@@ -41,36 +25,24 @@ private fun buildRetrofitInstance(baseUrl: String): Retrofit {
         .addInterceptor(logging)
         .build()
 
-    return Retrofit.Builder()
-        .baseUrl(baseUrl)
+    Retrofit.Builder()
+        .baseUrl(SIGN_UP_BASE_URL)
         .addConverterFactory(GsonConverterFactory.create())
         .client(client)
         .build()
-}
-
-
-interface EmailCheckAPI {
-
-    @POST("email_address_exists")
-    suspend fun checkEmailAddressExists(
-        @Body emailCheckRequest: EmailCheckRequest
-    ): Response<EmailAddressExistsResponse>
 
 }
 
-@JvmInline
-value class EmailCheckRequest(@SerializedName("email_address") val emailAddress: String)
+val signUpEmailApi by lazy {
+    signUpRetrofit.create(SignUpEmailApi::class.java)
+}
 
-data class EmailAddressExistsResponse(
-    val statusCode: Int,
-    val exists: Boolean,
-)
 
 interface SignUpEmailApi {
 
     @POST("sign_up_email_address")
     suspend fun signUpEmailAddress(
-        @Body emailSignUpRequest: EmailSignUpRequest
+        @Body emailSignUpRequest: Any
     ): Response<SignUpEmailResponse>
 
 }
@@ -80,34 +52,5 @@ value class EmailSignUpRequest(@SerializedName("email_address") val emailAddress
 
 data class SignUpEmailResponse(
     val statusCode: Int,
-    val requestCode: Int,
+    val jwtToken: String,
 )
-
-//MainScope().launch {
-//    withContext(this.coroutineContext) {
-//        val emailAddress = "test@gmail.com"
-//        val test = EmailCheckRequest(emailAddress)
-//        emailCheckApi.checkEmailAddressExists(test)
-//            .runCatching {
-//                if (this.isSuccessful) {
-//                    if (this.body()?.exists == true) {
-//                        Timber.e("Email address already exists!")
-//                    } else {
-//                        signUp(emailAddress)
-//                    }
-//                }
-//            }
-//    }
-//}
-
-private suspend fun signUp(emailAddress: String) =
-    signUpEmailApi.signUpEmailAddress(EmailSignUpRequest(emailAddress))
-        .runCatching {
-            this.body()?.run {
-                if (requestCode == -1) {
-                    Timber.e("Email Already Exists!")
-                } else {
-                    Timber.e("Email successfully added to database")
-                }
-            } ?: Timber.e("Network error?!")
-        }

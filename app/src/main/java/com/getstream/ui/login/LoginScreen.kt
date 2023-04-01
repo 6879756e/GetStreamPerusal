@@ -14,17 +14,23 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
 import com.getstream.ui.theme.GetStreamPerusalTheme
+import com.google.android.gms.common.SignInButton
 import kotlinx.coroutines.launch
 
 
 @Composable
-fun LoginScreen() {
+fun LoginScreen(
+    onGoogleSignInClicked: () -> Unit = {},
+) {
     val scaffoldState = rememberBottomSheetScaffoldState()
     val scope = rememberCoroutineScope()
 
     BottomSheetScaffold(
-        sheetContent = { SheetContent() },
+        sheetContent = {
+            SheetContent(onGoogleSignInClicked = onGoogleSignInClicked)
+        },
         scaffoldState = scaffoldState,
         sheetPeekHeight = 0.dp,
         sheetShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
@@ -44,7 +50,9 @@ fun LoginScreenPreview() {
 }
 
 @Composable
-fun SheetContent() = Column(
+fun SheetContent(
+    onGoogleSignInClicked: () -> Unit = {}
+) = Column(
     modifier = Modifier
         .fillMaxWidth()
         .fillMaxHeight(0.8f)
@@ -52,6 +60,9 @@ fun SheetContent() = Column(
     Spacer(modifier = Modifier.padding(vertical = 8.dp))
     BottomSheetHandle()
 
+    AndroidView(factory = { SignInButton(it) }) { button ->
+        button.setOnClickListener { onGoogleSignInClicked() }
+    }
     Text("TODO: BottomSheet Content")
 }
 

@@ -2,6 +2,7 @@ package com.getstream
 
 import android.app.Application
 import io.getstream.chat.android.client.ChatClient
+import io.getstream.chat.android.client.logger.ChatLogLevel
 import io.getstream.chat.android.offline.model.message.attachments.UploadAttachmentsNetworkType
 import io.getstream.chat.android.offline.plugin.configuration.Config
 import io.getstream.chat.android.offline.plugin.factory.StreamOfflinePluginFactory
@@ -18,5 +19,6 @@ fun Application.buildChatClient() {
         appContext = this,
     )
 
-    ChatClient.Builder(Env.API_KEY, this).withPlugin(offlinePluginFactory).build()
+    ChatClient.Builder(Env.API_KEY, this).withPlugin(offlinePluginFactory)
+        .logLevel(ChatLogLevel.ALL).build()
 }
