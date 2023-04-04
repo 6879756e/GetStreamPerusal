@@ -17,6 +17,8 @@ class GetStreamPerusalViewModel @Inject constructor(
 
     val userState = ChatClient.instance().clientState.initializationState
 
+    var signInRequested = false
+
 
     fun getJwtToken(): Flow<String> = dataStoreRepository.getString("JWT_TOKEN")
     fun getEmailAddress(): Flow<String> = dataStoreRepository.getString("EMAIL")

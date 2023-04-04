@@ -7,7 +7,9 @@ import android.view.ViewTreeObserver
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
@@ -20,7 +22,6 @@ import com.getstream.navigation.Home
 import com.getstream.ui.theme.GetStreamPerusalTheme
 import com.getstream.util.toId
 import dagger.hilt.android.AndroidEntryPoint
-import io.getstream.chat.android.client.ChatClient
 import io.getstream.chat.android.client.models.InitializationState
 import io.getstream.chat.android.client.models.User
 import io.getstream.chat.android.compose.ui.channels.ChannelsScreen
@@ -47,28 +48,27 @@ class GetStreamPerusalActivity : ComponentActivity() {
 
             val userState by getStreamPerusalViewModel.userState.collectAsState()
 
-            GetStreamPerusalTheme {
-                if (userState == InitializationState.NOT_INITIALIZED) {
-                    if (jwtToken.isEmpty()) {
-                        startActivity(Intent(this, LoginActivity::class.java))
-                        finish()
-                    } else {
-                        if (!ChatClient.instance().clientState.isInitialized
-                            && email.isNotEmpty()
-                            && displayName.isNotEmpty()
-                        ) {
-                            getStreamPerusalViewModel.signIn(
-                                User(id = email.toId(), name = displayName), jwtToken
-                            )
-                        }
-                    }
+            if (userState == InitializationState.NOT_INITIALIZED) {
+                if (jwtToken.isEmpty()) {
+                    startActivity(Intent(this, LoginActivity::class.java))
+                    finish()
                 } else {
-                    val navController = rememberNavController()
-
-                    GetStreamNavHost(navController = navController)
-
-                    content.viewTreeObserver.removeOnPreDrawListener(onFinishLoadingListener)
+                    if (!getStreamPerusalViewModel.signInRequested
+                        && email.isNotEmpty()
+                        && displayName.isNotEmpty()
+                    ) {
+                        getStreamPerusalViewModel.signIn(
+                            User(id = email.toId(), name = displayName), jwtToken
+                        )
+                        getStreamPerusalViewModel.signInRequested = true
+                    }
                 }
+            } else {
+                val navController = rememberNavController()
+
+                GetStreamNavHost(navController = navController)
+
+                content.viewTreeObserver.removeOnPreDrawListener(onFinishLoadingListener)
             }
         }
     }
@@ -78,16 +78,17 @@ class GetStreamPerusalActivity : ComponentActivity() {
         navController: NavHostController,
         modifier: Modifier = Modifier,
     ) {
-        NavHost(
-            navController = navController,
-            startDestination = Home.route,
-            modifier = modifier,
-        ) {
-            composable(route = Home.route) {
-                HomeScreen()
+        GetStreamPerusalTheme {
+            NavHost(
+                navController = navController,
+                startDestination = Home.route,
+                modifier = modifier,
+            ) {
+                composable(route = Home.route) {
+                    HomeScreen()
+                }
             }
         }
-
     }
 
     @Composable
