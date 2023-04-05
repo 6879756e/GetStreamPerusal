@@ -3,11 +3,12 @@
 package com.getstream.ui.login
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.ModalBottomSheetValue.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.getstream.ui.theme.GetStreamPerusalTheme
 import com.getstream.viewmodels.LoginViewModel
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 
@@ -35,21 +37,39 @@ fun LoginScreen(
 
     BottomSheetScaffold(
         sheetContent = {
-            SheetContent(onSignInOptionClicked = onSignInOptionClicked)
+            SheetContent(
+                onSignInOptionClicked = onSignInOptionClicked,
+                bottomSheetState = scaffoldState.bottomSheetState
+            )
         },
         scaffoldState = scaffoldState,
         sheetPeekHeight = 0.dp,
         sheetShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
-        sheetShadowElevation = 4.dp
+        sheetShadowElevation = 4.dp,
     ) {
-        LayoutContent(onButtonClick = {
-            scope.launch { scaffoldState.bottomSheetState.expand() }
-        })
+        LayoutContent(
+            modifier = Modifier.closeBottomSheetOnOutsideTap(scope, scaffoldState),
+            onButtonClick = {
+                scope.launch { scaffoldState.bottomSheetState.expand() }
+            })
     }
 
     if (isConnecting) {
         CircularIndicatorWithDimmedBackground()
     }
+}
+
+private fun Modifier.closeBottomSheetOnOutsideTap(
+    scope: CoroutineScope,
+    scaffoldState: BottomSheetScaffoldState
+) = this.pointerInput(Unit) {
+    detectTapGestures(onTap = {
+        scope.launch {
+            if (scaffoldState.bottomSheetState.currentValue == SheetValue.Expanded) {
+                scaffoldState.bottomSheetState.show()
+            }
+        }
+    })
 }
 
 @Composable
@@ -67,10 +87,16 @@ private fun CircularIndicatorWithDimmedBackground() {
 
 @Composable
 fun SheetContent(
-    onSignInOptionClicked: (SignInOption) -> Unit = {}
+    bottomSheetState: SheetState,
+    onSignInOptionClicked: (SignInOption) -> Unit = {},
 ) = Column(
     modifier = Modifier.fillMaxWidth()
 ) {
+    val scope = rememberCoroutineScope()
+
+    BackHandler(enabled = true) {
+        scope.launch { bottomSheetState.show() }
+    }
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -88,16 +114,18 @@ fun SheetContent(
 @Composable
 fun SheetContentPreview() {
     GetStreamPerusalTheme {
-        SheetContent()
+        val bottomSheetState = rememberBottomSheetScaffoldState()
+        SheetContent(bottomSheetState.bottomSheetState)
     }
 }
 
 @Composable
 fun LayoutContent(
-    onButtonClick: () -> Unit = {}
+    modifier: Modifier = Modifier,
+    onButtonClick: () -> Unit = {},
 ) {
     Box(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .background(Color(0x1f777777))
     ) {
