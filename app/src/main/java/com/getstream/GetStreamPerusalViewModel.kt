@@ -5,7 +5,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import com.getstream.data.DataStoreRepository
-import com.getstream.util.toId
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.getstream.chat.android.client.ChatClient
 import io.getstream.chat.android.client.models.User
@@ -22,7 +21,7 @@ class GetStreamPerusalViewModel @Inject constructor(
 
     private val isLoginRequired = MutableStateFlow(false)
 
-    val isUserAuthenticated = MutableStateFlow(false)
+    val clientState = ChatClient.instance().clientState.initializationState
 
     private val jwtToken: Flow<String> = dataStoreRepository.getUserJwtToken()
     private val emailAddress: Flow<String> = dataStoreRepository.getUserEmail()
@@ -30,31 +29,25 @@ class GetStreamPerusalViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            jwtToken.collect { token ->
-                if (token.isEmpty()) {
+            combine(jwtToken, emailAddress, displayName) { token, email, name ->
+                if (token.isEmpty()) return@combine null
+
+                User(id = email, name = name) to token
+            }.collect { userInfo ->
+                if (userInfo == null) {
                     isLoginRequired.value = true
                 } else if (ChatClient.instance().getCurrentUser() == null) {
-                    attemptToSignIn(token)
+                    attemptToSignIn(userInfo.first, userInfo.second)
                 }
             }
         }
     }
 
-    private suspend fun attemptToSignIn(token: String) =
-        combine(emailAddress, displayName) { email, displayName ->
-            User(email.toId(), displayName)
-        }.collect { user ->
-            connectUser(user, token) {
-                if (it.isSuccess) {
-                    isUserAuthenticated.value = true
-                } else {
-                    viewModelScope.launch {
-                        dataStoreRepository.clearUserData()
-                    }
-                }
-            }
+    private fun attemptToSignIn(user: User, token: String) = connectUser(user, token) { result ->
+        if (result.isError) {
+            viewModelScope.launch { dataStoreRepository.clearUserData() }
         }
-
+    }
 
     fun isLoginRequired(): LiveData<Boolean> = isLoginRequired.asLiveData()
 

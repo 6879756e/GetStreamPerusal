@@ -21,6 +21,7 @@ import com.getstream.login.LoginActivity
 import com.getstream.navigation.Home
 import com.getstream.ui.theme.GetStreamPerusalTheme
 import dagger.hilt.android.AndroidEntryPoint
+import io.getstream.chat.android.client.models.InitializationState
 import io.getstream.chat.android.compose.ui.channels.ChannelsScreen
 import io.getstream.chat.android.compose.ui.theme.ChatTheme
 
@@ -40,9 +41,9 @@ class GetStreamPerusalActivity : ComponentActivity() {
         observeIsLoginRequired()
 
         setContent {
-            val isUserAuthenticated by getStreamPerusalViewModel.isUserAuthenticated.collectAsState()
+            val clientState by getStreamPerusalViewModel.clientState.collectAsState()
 
-            if (isUserAuthenticated) {
+            if (clientState == InitializationState.COMPLETE) {
                 val navController = rememberNavController()
 
                 GetStreamNavHost(navController = navController)
