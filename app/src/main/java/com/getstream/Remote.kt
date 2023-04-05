@@ -1,6 +1,5 @@
 package com.getstream
 
-import com.getstream.Env.EMAIL_EXISTS_BASE_URL
 import com.getstream.Env.SIGN_UP_BASE_URL
 import com.google.gson.annotations.SerializedName
 import okhttp3.OkHttpClient
@@ -10,7 +9,6 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
 import retrofit2.http.POST
-import timber.log.Timber
 
 /**
  * TODO: Code on this file requires reorganising. The code includes the business logic for checking

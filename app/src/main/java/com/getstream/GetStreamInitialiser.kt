@@ -27,5 +27,5 @@ fun Application.buildChatClient() {
 }
 
 fun connectUser(user: User, token: String, callback: (Result<ConnectionData>) -> Unit = {}) {
-    ChatClient.instance().connectUser(user, token).enqueue (callback)
+    ChatClient.instance().connectUser(user, token).enqueue(callback)
 }

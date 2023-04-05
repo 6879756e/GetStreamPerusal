@@ -24,6 +24,33 @@ class DataStoreRepositoryImpl(
         val preferenceKey = stringPreferencesKey(key)
         return context.dataStore.data.map { it[preferenceKey] ?: "" }
     }
+
+    override suspend fun setUserJwtToken(token: String) = putString(userJwtToken, token)
+    override fun getUserJwtToken() = getString(userJwtToken)
+
+    override suspend fun setUserEmail(email: String) = putString(userEmail, email)
+    override fun getUserEmail() = getString(userEmail)
+
+    override suspend fun setUserDisplayName(displayName: String) =
+        putString(userDisplayName, displayName)
+
+    override fun getUserDisplayName() = getString(userDisplayName)
+
+    override suspend fun clearUserData() {
+        val userDataKeys = listOf(userJwtToken, userEmail, userDisplayName)
+
+        userDataKeys.forEach {
+            context.dataStore.edit { preferences ->
+                preferences.remove(stringPreferencesKey(it))
+            }
+        }
+    }
+
+    companion object {
+        private const val userJwtToken = "USER_JWT_TOKEN"
+        private const val userEmail = "USER_EMAIL"
+        private const val userDisplayName = "USER_DISPLAY_NAME"
+    }
 }
 
 

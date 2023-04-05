@@ -1,13 +1,18 @@
 package com.getstream
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asLiveData
+import androidx.lifecycle.viewModelScope
 import com.getstream.data.DataStoreRepository
+import com.getstream.util.toId
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.getstream.chat.android.client.ChatClient
-import io.getstream.chat.android.client.models.ConnectionData
 import io.getstream.chat.android.client.models.User
-import io.getstream.chat.android.client.utils.Result
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -15,15 +20,42 @@ class GetStreamPerusalViewModel @Inject constructor(
     private val dataStoreRepository: DataStoreRepository
 ) : ViewModel() {
 
-    val userState = ChatClient.instance().clientState.initializationState
+    private val isLoginRequired = MutableStateFlow(false)
 
-    var signInRequested = false
+    val isUserAuthenticated = MutableStateFlow(false)
+
+    private val jwtToken: Flow<String> = dataStoreRepository.getUserJwtToken()
+    private val emailAddress: Flow<String> = dataStoreRepository.getUserEmail()
+    private val displayName: Flow<String> = dataStoreRepository.getUserDisplayName()
+
+    init {
+        viewModelScope.launch {
+            jwtToken.collect { token ->
+                if (token.isEmpty()) {
+                    isLoginRequired.value = true
+                } else if (ChatClient.instance().getCurrentUser() == null) {
+                    attemptToSignIn(token)
+                }
+            }
+        }
+    }
+
+    private suspend fun attemptToSignIn(token: String) =
+        combine(emailAddress, displayName) { email, displayName ->
+            User(email.toId(), displayName)
+        }.collect { user ->
+            connectUser(user, token) {
+                if (it.isSuccess) {
+                    isUserAuthenticated.value = true
+                } else {
+                    viewModelScope.launch {
+                        dataStoreRepository.clearUserData()
+                    }
+                }
+            }
+        }
 
 
-    fun getJwtToken(): Flow<String> = dataStoreRepository.getString("JWT_TOKEN")
-    fun getEmailAddress(): Flow<String> = dataStoreRepository.getString("EMAIL")
-    fun getDisplayName(): Flow<String> = dataStoreRepository.getString("DISPLAY_NAME")
+    fun isLoginRequired(): LiveData<Boolean> = isLoginRequired.asLiveData()
 
-    fun signIn(user: User, token: String, callback: (Result<ConnectionData>) -> Unit = {}) =
-        connectUser(user, token, callback)
 }

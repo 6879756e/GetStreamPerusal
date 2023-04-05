@@ -20,10 +20,7 @@ import androidx.navigation.compose.rememberNavController
 import com.getstream.login.LoginActivity
 import com.getstream.navigation.Home
 import com.getstream.ui.theme.GetStreamPerusalTheme
-import com.getstream.util.toId
 import dagger.hilt.android.AndroidEntryPoint
-import io.getstream.chat.android.client.models.InitializationState
-import io.getstream.chat.android.client.models.User
 import io.getstream.chat.android.compose.ui.channels.ChannelsScreen
 import io.getstream.chat.android.compose.ui.theme.ChatTheme
 
@@ -40,30 +37,12 @@ class GetStreamPerusalActivity : ComponentActivity() {
         val content: View = findViewById(android.R.id.content)
         content.viewTreeObserver.addOnPreDrawListener(onFinishLoadingListener)
 
+        observeIsLoginRequired()
+
         setContent {
-            val jwtToken by getStreamPerusalViewModel.getJwtToken().collectAsState(UNINITIALISED)
-            val email by getStreamPerusalViewModel.getEmailAddress().collectAsState(initial = "")
-            val displayName by getStreamPerusalViewModel.getDisplayName()
-                .collectAsState(initial = "")
+            val isUserAuthenticated by getStreamPerusalViewModel.isUserAuthenticated.collectAsState()
 
-            val userState by getStreamPerusalViewModel.userState.collectAsState()
-
-            if (userState == InitializationState.NOT_INITIALIZED) {
-                if (jwtToken.isEmpty()) {
-                    startActivity(Intent(this, LoginActivity::class.java))
-                    finish()
-                } else {
-                    if (!getStreamPerusalViewModel.signInRequested
-                        && email.isNotEmpty()
-                        && displayName.isNotEmpty()
-                    ) {
-                        getStreamPerusalViewModel.signIn(
-                            User(id = email.toId(), name = displayName), jwtToken
-                        )
-                        getStreamPerusalViewModel.signInRequested = true
-                    }
-                }
-            } else {
+            if (isUserAuthenticated) {
                 val navController = rememberNavController()
 
                 GetStreamNavHost(navController = navController)
@@ -72,6 +51,14 @@ class GetStreamPerusalActivity : ComponentActivity() {
             }
         }
     }
+
+    private fun observeIsLoginRequired() =
+        getStreamPerusalViewModel.isLoginRequired().observe(this) { loginRequired ->
+            if (loginRequired) {
+                startActivity(Intent(this, LoginActivity::class.java))
+                finish()
+            }
+        }
 
     @Composable
     fun GetStreamNavHost(
@@ -105,5 +92,3 @@ class GetStreamPerusalActivity : ComponentActivity() {
     }
 
 }
-
-private const val UNINITIALISED = "uninitialised"
