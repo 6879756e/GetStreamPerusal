@@ -19,6 +19,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.airbnb.lottie.compose.*
+import com.getstream.R
 import com.getstream.ui.theme.GetStreamPerusalTheme
 import com.getstream.viewmodels.LoginViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -124,12 +126,19 @@ fun LayoutContent(
     modifier: Modifier = Modifier,
     onButtonClick: () -> Unit = {},
 ) {
+    val composition by rememberLottieComposition(spec = LottieCompositionSpec.RawRes(R.raw.sign_in_animation))
+    val progress by animateLottieCompositionAsState(
+        composition = composition,
+        iterations = LottieConstants.IterateForever,
+        clipSpec = LottieClipSpec.Frame(39),
+        reverseOnRepeat = true
+    )
+
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0x1f777777))
     ) {
-        Text(text = "TODO: Put a nice image, and perhaps some text, Lorem ipsum")
+        LottieAnimation(composition = composition, progress = { progress })
 
         Button(
             onClick = onButtonClick,
