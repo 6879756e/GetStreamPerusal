@@ -12,20 +12,26 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.getstream.ui.theme.GetStreamPerusalTheme
+import com.getstream.viewmodels.LoginViewModel
 import com.google.android.gms.common.SignInButton
 import kotlinx.coroutines.launch
 
 
 @Composable
 fun LoginScreen(
+    loginViewModel: LoginViewModel = viewModel(),
     onGoogleSignInClicked: () -> Unit = {},
 ) {
     val scaffoldState = rememberBottomSheetScaffoldState()
     val scope = rememberCoroutineScope()
+
+    val isConnecting by loginViewModel.isConnecting.collectAsState()
 
     BottomSheetScaffold(
         sheetContent = {
@@ -38,6 +44,25 @@ fun LoginScreen(
         LayoutContent(onButtonClick = {
             scope.launch { scaffoldState.bottomSheetState.expand() }
         })
+    }
+
+    if (isConnecting) {
+        CircularIndicatorWithDimmedBackground()
+    }
+}
+
+@Composable
+@Preview
+private fun CircularIndicatorWithDimmedBackground() {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.3f))
+            .pointerInput(Unit) { }
+    ) {
+        CircularProgressIndicator(
+            modifier = Modifier.align(Alignment.Center)
+        )
     }
 }
 

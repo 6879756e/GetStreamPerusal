@@ -5,11 +5,10 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import com.getstream.GetStreamPerusalActivity
 import com.getstream.ui.login.LoginScreen
 import com.getstream.ui.login.signInWithGoogle
+import com.getstream.ui.theme.GetStreamPerusalTheme
 import com.getstream.viewmodels.LoginViewModel
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
@@ -28,18 +27,22 @@ class LoginActivity : ComponentActivity() {
             it?.run { loginViewModel.getJwtTokenAndSignIn(this) }
         }
 
+        observeClientState()
+
         setContent {
-            val loginState by loginViewModel.clientState.collectAsState()
-
-            if (loginState == InitializationState.NOT_INITIALIZED) {
+            GetStreamPerusalTheme {
                 LoginScreen { resultLauncher.launch(getSignInClient()) }
-
-            } else {
-                finish()
-                startActivity(Intent(this, GetStreamPerusalActivity::class.java))
             }
         }
     }
+
+    private fun observeClientState() = loginViewModel.clientState.observe(this) { state ->
+        if (state == InitializationState.COMPLETE) {
+            finish()
+            startActivity(Intent(this, GetStreamPerusalActivity::class.java))
+        }
+    }
+
 
     private fun getSignInClient(): GoogleSignInClient {
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
