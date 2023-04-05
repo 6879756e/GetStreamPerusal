@@ -1,32 +1,34 @@
-@file:OptIn(ExperimentalMaterialApi::class)
+@file:OptIn(ExperimentalMaterial3Api::class)
 
 package com.getstream.ui.login
 
+import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.*
 import androidx.compose.material.ModalBottomSheetValue.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.getstream.ui.theme.GetStreamPerusalTheme
 import com.getstream.viewmodels.LoginViewModel
-import com.google.android.gms.common.SignInButton
 import kotlinx.coroutines.launch
 
 
 @Composable
 fun LoginScreen(
     loginViewModel: LoginViewModel = viewModel(),
-    onGoogleSignInClicked: () -> Unit = {},
+    onSignInOptionClicked: (SignInOption) -> Unit = {},
 ) {
     val scaffoldState = rememberBottomSheetScaffoldState()
     val scope = rememberCoroutineScope()
@@ -35,11 +37,12 @@ fun LoginScreen(
 
     BottomSheetScaffold(
         sheetContent = {
-            SheetContent(onGoogleSignInClicked = onGoogleSignInClicked)
+            SheetContent(onSignInOptionClicked = onSignInOptionClicked)
         },
         scaffoldState = scaffoldState,
         sheetPeekHeight = 0.dp,
-        sheetShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
+        sheetShape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
+        sheetShadowElevation = 4.dp
     ) {
         LayoutContent(onButtonClick = {
             scope.launch { scaffoldState.bottomSheetState.expand() }
@@ -54,58 +57,41 @@ fun LoginScreen(
 @Composable
 @Preview
 private fun CircularIndicatorWithDimmedBackground() {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Black.copy(alpha = 0.3f))
-            .pointerInput(Unit) { }
-    ) {
+    Box(modifier = Modifier
+        .fillMaxSize()
+        .background(Color.Black.copy(alpha = 0.3f))
+        .pointerInput(Unit) { }) {
         CircularProgressIndicator(
             modifier = Modifier.align(Alignment.Center)
         )
     }
 }
 
-@Preview
-@Composable
-fun LoginScreenPreview() {
-    GetStreamPerusalTheme {
-        LoginScreen()
-    }
-}
-
 @Composable
 fun SheetContent(
-    onGoogleSignInClicked: () -> Unit = {}
+    onSignInOptionClicked: (SignInOption) -> Unit = {}
 ) = Column(
-    modifier = Modifier
-        .fillMaxWidth()
-        .fillMaxHeight(0.8f)
+    modifier = Modifier.fillMaxWidth()
 ) {
-    Spacer(modifier = Modifier.padding(vertical = 8.dp))
-    BottomSheetHandle()
-
-    AndroidView(factory = { SignInButton(it) }) { button ->
-        button.setOnClickListener { onGoogleSignInClicked() }
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 32.dp, top = 8.dp, end = 32.dp, bottom = 32.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        SignInOption.values().forEach { signInOption ->
+            SignInButton(signInOption, onSignInOptionClicked)
+        }
     }
-    Text("TODO: BottomSheet Content")
 }
 
-@Preview
-@Composable
-private fun ColumnScope.BottomSheetHandle() = Box(
-    modifier = Modifier
-        .background(color = Color(0x88777777), shape = CircleShape)
-        .width(36.dp)
-        .height(8.dp)
-        .align(Alignment.CenterHorizontally)
-        .padding(top = 24.dp, bottom = 24.dp)
-)
-
-@Preview
+@Preview(showBackground = true, uiMode = UI_MODE_NIGHT_YES, name = "Night Mode")
+@Preview(showBackground = true)
 @Composable
 fun SheetContentPreview() {
-    SheetContent()
+    GetStreamPerusalTheme {
+        SheetContent()
+    }
 }
 
 @Composable
@@ -127,6 +113,38 @@ fun LayoutContent(
                 .padding(24.dp)
         ) {
             Text("Get Started")
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun SignInButton(
+    signInOption: SignInOption = SignInOption.GOOGLE, onClickListener: (SignInOption) -> Unit = {}
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(2.dp, Color.Black, CardDefaults.shape)
+            .clipToBounds()
+            .clickable(onClick = { onClickListener(signInOption) })
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(
+                space = 24.dp, alignment = Alignment.CenterHorizontally
+            ),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                painter = painterResource(id = signInOption.resId),
+                contentDescription = "${signInOption.type} logo",
+                modifier = Modifier.size(24.dp),
+                tint = Color.Unspecified
+            )
+            Text(text = "Sign in with ${signInOption.type}")
         }
     }
 }

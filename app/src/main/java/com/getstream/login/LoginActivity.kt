@@ -7,6 +7,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import com.getstream.GetStreamPerusalActivity
 import com.getstream.ui.login.LoginScreen
+import com.getstream.ui.login.SignInOption
 import com.getstream.ui.login.signInWithGoogle
 import com.getstream.ui.theme.GetStreamPerusalTheme
 import com.getstream.viewmodels.LoginViewModel
@@ -31,7 +32,9 @@ class LoginActivity : ComponentActivity() {
 
         setContent {
             GetStreamPerusalTheme {
-                LoginScreen { resultLauncher.launch(getSignInClient()) }
+                LoginScreen {
+                    if (it == SignInOption.GOOGLE) resultLauncher.launch(getSignInClient())
+                }
             }
         }
     }
