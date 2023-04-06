@@ -32,9 +32,14 @@ class LoginActivity : ComponentActivity() {
 
         setContent {
             GetStreamPerusalTheme {
-                LoginScreen {
-                    if (it == SignInOption.GOOGLE) resultLauncher.launch(getSignInClient())
-                }
+                LoginScreen(
+                    onSignInOptionClicked = {
+                        if (it == SignInOption.GOOGLE) {
+                            resultLauncher.launch(getSignInClient())
+                        }
+                    },
+                    onBackPressed = { finish() }
+                )
             }
         }
     }

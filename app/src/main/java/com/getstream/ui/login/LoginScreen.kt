@@ -31,6 +31,7 @@ import kotlinx.coroutines.launch
 fun LoginScreen(
     loginViewModel: LoginViewModel = viewModel(),
     onSignInOptionClicked: (SignInOption) -> Unit = {},
+    onBackPressed: () -> Unit = {},
 ) {
     val scaffoldState = rememberBottomSheetScaffoldState()
     val scope = rememberCoroutineScope()
@@ -41,7 +42,8 @@ fun LoginScreen(
         sheetContent = {
             SheetContent(
                 onSignInOptionClicked = onSignInOptionClicked,
-                bottomSheetState = scaffoldState.bottomSheetState
+                bottomSheetState = scaffoldState.bottomSheetState,
+                onBackPressed = onBackPressed,
             )
         },
         scaffoldState = scaffoldState,
@@ -91,13 +93,18 @@ private fun CircularIndicatorWithDimmedBackground() {
 fun SheetContent(
     bottomSheetState: SheetState,
     onSignInOptionClicked: (SignInOption) -> Unit = {},
+    onBackPressed: () -> Unit = {},
 ) = Column(
     modifier = Modifier.fillMaxWidth()
 ) {
     val scope = rememberCoroutineScope()
 
     BackHandler(enabled = true) {
-        scope.launch { bottomSheetState.show() }
+        if (bottomSheetState.currentValue == SheetValue.Expanded) {
+            scope.launch { bottomSheetState.show() }
+        } else {
+            onBackPressed()
+        }
     }
     Column(
         modifier = Modifier
