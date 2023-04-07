@@ -136,12 +136,17 @@ class GetStreamPerusalActivity : ComponentActivity() {
                     onClick = { onItemClicked(it) },
                     icon = {
                         Icon(
-                            imageVector = it.imageVector,
+                            imageVector = if (it == currentDestination) it.imageVectorFilled else it.imageVectorOutlined,
                             contentDescription = "Decorative icon for ${it.label}"
                         )
                     },
                     label = {
-                        Text(text = it.label, style = MaterialTheme.typography.labelSmall)
+                        when (it) {
+                            Home -> Text(text = it.label)
+                            Chat -> Text(text = it.label, style = MaterialTheme.typography.labelSmall)
+                            More -> Text(text = it.label, style = MaterialTheme.typography.labelLarge)
+                        }
+
                     }
                 )
             }
