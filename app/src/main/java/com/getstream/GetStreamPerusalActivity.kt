@@ -10,8 +10,8 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.BottomNavigation
-import androidx.compose.material.BottomNavigationItem
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -129,9 +129,9 @@ class GetStreamPerusalActivity : ComponentActivity() {
         currentDestination: Destination,
         onItemClicked: (Destination) -> Unit,
     ) {
-        BottomNavigation {
+        NavigationBar {
             Destination.allDestinations.forEach {
-                BottomNavigationItem(
+                NavigationBarItem(
                     selected = it == currentDestination,
                     onClick = { onItemClicked(it) },
                     icon = {
