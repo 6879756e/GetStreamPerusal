@@ -15,28 +15,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import coil.compose.rememberAsyncImagePainter
 import com.getstream.R
 
-@Composable
-fun UserRowItem(displayName: String, @DrawableRes drawableRes: Int, isOnline: Boolean) {
-    Row(
-        modifier = Modifier.padding(8.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        ProfilePhotoWithOnlineStatus(
-            isOnline = isOnline,
-            drawableRes = drawableRes
-        )
-        Text(
-            text = displayName,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.fillMaxWidth(1f),
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
-    }
-}
 
 @Preview
 @Composable
@@ -52,22 +33,52 @@ fun UserRowItemPreviewLongName(isOnline: Boolean = true) {
     UserRowItem(name.toString(), R.drawable.test_user_profile_img, isOnline)
 }
 
+@Composable
+fun UserRowItem(displayName: String, imageUrl: String, isOnline: Boolean) {
+    Row(
+        modifier = Modifier.padding(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        ProfilePhotoWithOnlineStatus(
+            profileImage = { ProfileImage(imageUrl = imageUrl) },
+            isOnline = isOnline,
+        )
+        DisplayNameText(displayName)
+    }
+}
+
+@Composable
+fun UserRowItem(displayName: String, @DrawableRes drawableRes: Int, isOnline: Boolean) {
+    Row(
+        modifier = Modifier.padding(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        ProfilePhotoWithOnlineStatus(
+            profileImage = { ProfileImage(drawableRes = drawableRes) },
+            isOnline = isOnline,
+        )
+        DisplayNameText(displayName)
+    }
+}
+
+@Preview
+@Composable
+fun ProfilePhotoWithOnlineStatusPreview() {
+    ProfilePhotoWithOnlineStatus(
+        isOnline = true,
+        profileImage = { ProfileImage(drawableRes = R.drawable.test_user_profile_img) }
+    )
+}
 
 @Composable
 fun ProfilePhotoWithOnlineStatus(
-    @DrawableRes drawableRes: Int,
+    profileImage: @Composable () -> Unit,
     isOnline: Boolean = false,
-    contentDescription: String? = null,
 ) {
     Box {
-        Image(
-            painter = painterResource(id = drawableRes),
-            modifier = Modifier
-                .size(32.dp)
-                .clip(RoundedCornerShape(4.dp)),
-            contentDescription = contentDescription,
-            contentScale = ContentScale.Crop
-        )
+        profileImage()
 
         OnlineIndicator(
             isOnline = isOnline,
@@ -78,8 +89,37 @@ fun ProfilePhotoWithOnlineStatus(
     }
 }
 
-@Preview
 @Composable
-fun ProfilePhotoWithOnlineStatusPreview() {
-    ProfilePhotoWithOnlineStatus(isOnline = true, drawableRes = R.drawable.test_user_profile_img)
+private fun ProfileImage(imageUrl: String, contentDescription: String? = null) {
+    Image(
+        painter = rememberAsyncImagePainter(imageUrl),
+        modifier = Modifier
+            .size(32.dp)
+            .clip(RoundedCornerShape(4.dp)),
+        contentDescription = contentDescription,
+        contentScale = ContentScale.Crop
+    )
+}
+
+@Composable
+private fun ProfileImage(drawableRes: Int, contentDescription: String? = null) {
+    Image(
+        painter = painterResource(id = drawableRes),
+        modifier = Modifier
+            .size(32.dp)
+            .clip(RoundedCornerShape(4.dp)),
+        contentDescription = contentDescription,
+        contentScale = ContentScale.Crop
+    )
+}
+
+@Composable
+private fun DisplayNameText(displayName: String) {
+    Text(
+        text = displayName,
+        fontWeight = FontWeight.Bold,
+        modifier = Modifier.fillMaxWidth(1f),
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis
+    )
 }
