@@ -34,9 +34,14 @@ fun UserRowItemPreviewLongName(isOnline: Boolean = true) {
 }
 
 @Composable
-fun UserRowItem(displayName: String, imageUrl: String, isOnline: Boolean) {
+fun UserRowItem(
+    displayName: String,
+    imageUrl: String,
+    isOnline: Boolean,
+    modifier: Modifier = Modifier
+) {
     Row(
-        modifier = Modifier.padding(8.dp),
+        modifier = modifier.padding(8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {

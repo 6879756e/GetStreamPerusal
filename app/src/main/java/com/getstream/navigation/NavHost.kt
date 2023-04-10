@@ -9,6 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.getstream.features.home.HomeScreen
 
 @Composable
 fun GetStreamPerusalNavHost(
@@ -20,9 +21,7 @@ fun GetStreamPerusalNavHost(
         modifier = modifier,
     ) {
         composable(route = Home.route) {
-            Box(modifier = Modifier.fillMaxSize(1f)) {
-                Text(text = Home.label, modifier = Modifier.align(Alignment.Center))
-            }
+            HomeScreen()
         }
         composable(route = Chat.route) {
             Box(modifier = Modifier.fillMaxSize(1f)) {
