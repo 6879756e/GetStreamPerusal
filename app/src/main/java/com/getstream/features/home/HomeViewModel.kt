@@ -16,11 +16,13 @@ import kotlin.random.Random
 class HomeViewModel @Inject constructor() : ViewModel() {
 
     private val mockUsers = List(100) {
+        val online = Random.nextBoolean()
         User(
             id = "Philip J. Fry $it",
             name = "Philip J. Fry $it",
             image = "https://w7.pngwing.com/pngs/76/870/png-transparent-philip-j-fry-zoidberg-leela-amy-wong-bender-bender-child-face-hat-thumbnail.png",
-            online = Random.nextBoolean()
+            online = online,
+            invisible = !online
         )
     }
 

@@ -43,7 +43,7 @@ fun HomeScreen(
                 viewModel.toggleChannelCreateMode()
             }
 
-            UsersList(users = users,
+            UsersList(users = users.sortedWith(compareBy({ !it.online }, { it.name })),
                 isUserSelectState = isChannelCreateMode,
                 selectedUsers = selectedUsers.keys,
                 onClick = { if (!isChannelCreateMode) Timber.e("Row Item clicked: $it") },
