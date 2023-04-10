@@ -7,7 +7,9 @@ import android.view.ViewTreeObserver
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
@@ -69,7 +71,10 @@ class GetStreamPerusalActivity : ComponentActivity() {
     ) {
         var currentDestination by remember { mutableStateOf<Destination>(Home) }
 
-        Column {
+        Column(
+            modifier = modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Bottom,
+        ) {
             GetStreamPerusalNavHost(navController, modifier.weight(1f))
 
             GetStreamPerusalBottomNavigation(
