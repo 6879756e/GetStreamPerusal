@@ -7,29 +7,19 @@ import android.view.ViewTreeObserver
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.getstream.login.LoginActivity
-import com.getstream.navigation.Chat
 import com.getstream.navigation.Destination
+import com.getstream.navigation.GetStreamPerusalBottomNavigation
+import com.getstream.navigation.GetStreamPerusalNavHost
 import com.getstream.navigation.Home
-import com.getstream.navigation.More
 import com.getstream.ui.theme.GetStreamPerusalTheme
 import dagger.hilt.android.AndroidEntryPoint
 import io.getstream.chat.android.client.models.InitializationState
@@ -94,62 +84,6 @@ class GetStreamPerusalActivity : ComponentActivity() {
                     }
                 }
             )
-        }
-    }
-
-    @Composable
-    private fun GetStreamPerusalNavHost(
-        navController: NavHostController, modifier: Modifier
-    ) {
-        NavHost(
-            navController = navController,
-            startDestination = Home.route,
-            modifier = modifier,
-        ) {
-            composable(route = Home.route) {
-                Box(modifier = Modifier.fillMaxSize(1f)) {
-                    Text(text = Home.label, modifier = Modifier.align(Alignment.Center))
-                }
-            }
-            composable(route = Chat.route) {
-                Box(modifier = Modifier.fillMaxSize(1f)) {
-                    Text(text = Chat.label, modifier = Modifier.align(Alignment.Center))
-                }
-            }
-            composable(route = More.route) {
-                Box(modifier = Modifier.fillMaxSize(1f)) {
-                    Text(text = More.label, modifier = Modifier.align(Alignment.Center))
-                }
-            }
-        }
-    }
-
-    @Composable
-    private fun GetStreamPerusalBottomNavigation(
-        currentDestination: Destination,
-        onItemClicked: (Destination) -> Unit,
-    ) {
-        NavigationBar {
-            Destination.allDestinations.forEach {
-                NavigationBarItem(
-                    selected = it == currentDestination,
-                    onClick = { onItemClicked(it) },
-                    icon = {
-                        Icon(
-                            imageVector = if (it == currentDestination) it.imageVectorFilled else it.imageVectorOutlined,
-                            contentDescription = "Decorative icon for ${it.label}"
-                        )
-                    },
-                    label = {
-                        when (it) {
-                            Home -> Text(text = it.label)
-                            Chat -> Text(text = it.label, style = MaterialTheme.typography.labelSmall)
-                            More -> Text(text = it.label, style = MaterialTheme.typography.labelLarge)
-                        }
-
-                    }
-                )
-            }
         }
     }
 }
