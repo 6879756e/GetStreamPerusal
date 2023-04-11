@@ -10,7 +10,6 @@ import com.getstream.ui.login.LoginScreen
 import com.getstream.ui.login.SignInOption
 import com.getstream.ui.login.signInWithGoogle
 import com.getstream.ui.theme.GetStreamPerusalTheme
-import com.getstream.viewmodels.LoginViewModel
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInClient
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions

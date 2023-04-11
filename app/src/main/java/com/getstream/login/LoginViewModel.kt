@@ -1,4 +1,4 @@
-package com.getstream.viewmodels
+package com.getstream.login
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData

@@ -23,7 +23,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.airbnb.lottie.compose.*
 import com.getstream.R
 import com.getstream.ui.theme.GetStreamPerusalTheme
-import com.getstream.viewmodels.LoginViewModel
+import com.getstream.login.LoginViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
