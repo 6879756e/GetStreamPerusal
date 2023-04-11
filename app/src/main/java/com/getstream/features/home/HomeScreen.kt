@@ -1,6 +1,8 @@
 package com.getstream.features.home
 
 import androidx.compose.animation.*
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -27,8 +29,9 @@ import timber.log.Timber
 fun HomeScreen(
     viewModel: HomeViewModel = viewModel()
 ) {
-    val users by viewModel.users.collectAsStateWithLifecycle()
     val isChannelCreateMode by viewModel.channelCreateMode.collectAsStateWithLifecycle()
+
+    val users = viewModel.users
     val selectedUsers = viewModel.selectedUsers
 
     val topBarState by remember {
@@ -43,7 +46,7 @@ fun HomeScreen(
                 viewModel.toggleChannelCreateMode()
             }
 
-            UsersList(users = users.sortedWith(compareBy({ !it.online }, { it.name })),
+            UsersList(users = users,
                 isUserSelectState = isChannelCreateMode,
                 selectedUsers = selectedUsers.keys,
                 onClick = { if (!isChannelCreateMode) Timber.e("Row Item clicked: $it") },
@@ -89,6 +92,7 @@ private fun TopBar(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun UsersList(
     users: List<User>,
@@ -102,19 +106,21 @@ private fun UsersList(
     LazyColumn {
         items(
             users,
-            key = { it.id }
+            key = { it.id },
         ) { user ->
             val isChecked = user.id in selectedUsers
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = modifier.getClickPolicy(
-                    isUserSelectState = isUserSelectState,
-                    user = user,
-                    isChecked = isChecked,
-                    onCheckedChange = onCheckedChange,
-                    onClick = onClick,
-                    onLongClick = onLongClick
-                )
+                modifier = modifier
+                    .getClickPolicy(
+                        isUserSelectState = isUserSelectState,
+                        user = user,
+                        isChecked = isChecked,
+                        onCheckedChange = onCheckedChange,
+                        onClick = onClick,
+                        onLongClick = onLongClick
+                    )
+                    .animateItemPlacement(tween(300))
             ) {
                 AnimatedVisibility(visible = isUserSelectState) {
                     Checkbox(

@@ -3,34 +3,74 @@ package com.getstream.features.home
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.outlined.Textsms
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import io.getstream.chat.android.client.ChatClient
+import io.getstream.chat.android.client.api.models.NeutralFilterObject
+import io.getstream.chat.android.client.api.models.QueryUsersRequest
+import io.getstream.chat.android.client.events.UserPresenceChangedEvent
 import io.getstream.chat.android.client.models.User
+import io.getstream.chat.android.client.subscribeFor
+import io.getstream.chat.android.client.utils.onSuccess
 import kotlinx.coroutines.flow.MutableStateFlow
 import javax.inject.Inject
-import kotlin.random.Random
 
 @HiltViewModel
 class HomeViewModel @Inject constructor() : ViewModel() {
 
-    private val mockUsers = List(100) {
-        val online = Random.nextBoolean()
-        User(
-            id = "Philip J. Fry $it",
-            name = "Philip J. Fry $it",
-            image = "https://w7.pngwing.com/pngs/76/870/png-transparent-philip-j-fry-zoidberg-leela-amy-wong-bender-bender-child-face-hat-thumbnail.png",
-            online = online,
-            invisible = !online
-        )
-    }
-
-    val users = MutableStateFlow(mockUsers)
+    var users = mutableStateListOf<User>()
     var selectedUsers = mutableStateMapOf<String, Boolean>()
 
     val channelCreateMode = MutableStateFlow(false)
 
+    init {
+        fetchAllUsers()
+    }
+
+    private fun fetchAllUsers() {
+        @Suppress("LocalVariableName")
+        val _users = mutableListOf<User>()
+
+        fetchAllUsers(_users, onAllUsersFetched = {
+            _users.sortWith(userComparator())
+            users.addAll(_users)
+
+            ChatClient.instance().subscribeFor<UserPresenceChangedEvent> { event ->
+                users.find { event.user.id == it.id }?.run {
+                    users.remove(this)
+                    users.add(event.user)
+                    users.sortWith(userComparator())
+                }
+            }
+        })
+    }
+
+    private fun userComparator(): Comparator<User> = compareBy({ !it.online }, { it.name })
+
+    private var offset = 0
+    private fun fetchAllUsers(_users: MutableList<User>, onAllUsersFetched: () -> Unit) {
+        ChatClient.instance().queryUsers(
+            QueryUsersRequest(
+                filter = NeutralFilterObject,
+                offset = offset,
+                limit = DEFAULT_LIMIT,
+                presence = true
+            )
+        ).enqueue { result ->
+            result.onSuccess { users ->
+                _users.addAll(users)
+                if (users.size == DEFAULT_LIMIT) {
+                    offset += DEFAULT_LIMIT
+                    fetchAllUsers(_users, onAllUsersFetched)
+                } else {
+                    onAllUsersFetched()
+                }
+            }
+        }
+    }
 
     fun toggleChannelCreateMode() {
         channelCreateMode.value = !channelCreateMode.value
@@ -54,7 +94,8 @@ class HomeViewModel @Inject constructor() : ViewModel() {
     }
 
     enum class TopBarState(val imageVector: ImageVector) {
-        START_CHAT(Icons.Outlined.Textsms),
-        CANCEL_CHAT(Icons.Default.Close),
+        START_CHAT(Icons.Outlined.Textsms), CANCEL_CHAT(Icons.Default.Close),
     }
 }
+
+private const val DEFAULT_LIMIT = 30
