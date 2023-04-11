@@ -4,7 +4,6 @@ package com.getstream.ui.login
 
 import android.content.res.Configuration.UI_MODE_NIGHT_YES
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
@@ -22,8 +21,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.airbnb.lottie.compose.*
 import com.getstream.R
-import com.getstream.ui.theme.GetStreamPerusalTheme
 import com.getstream.login.LoginViewModel
+import com.getstream.ui.core.CircularIndicatorWithDimmedBackground
+import com.getstream.ui.theme.GetStreamPerusalTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -75,19 +75,6 @@ private fun Modifier.closeBottomSheetOnOutsideTap(
             }
         }
     })
-}
-
-@Composable
-@Preview
-private fun CircularIndicatorWithDimmedBackground() {
-    Box(modifier = Modifier
-        .fillMaxSize()
-        .background(Color.Black.copy(alpha = 0.3f))
-        .pointerInput(Unit) { }) {
-        CircularProgressIndicator(
-            modifier = Modifier.align(Alignment.Center)
-        )
-    }
 }
 
 @Composable
