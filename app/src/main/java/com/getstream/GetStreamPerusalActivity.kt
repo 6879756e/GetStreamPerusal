@@ -75,7 +75,9 @@ class GetStreamPerusalActivity : ComponentActivity() {
             modifier = modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Bottom,
         ) {
-            GetStreamPerusalNavHost(navController, modifier.weight(1f))
+            GetStreamPerusalNavHost(navController, modifier.weight(1f), onDestinationChanged = {
+                currentDestination = it
+            })
 
             GetStreamPerusalBottomNavigation(
                 currentDestination = currentDestination,

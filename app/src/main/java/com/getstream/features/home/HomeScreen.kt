@@ -19,15 +19,18 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.getstream.ui.core.CircularIndicatorWithDimmedBackground
 import com.getstream.ui.core.UserRowItem
 import com.getstream.util.clickable
 import com.getstream.util.combinedClickable
+import io.getstream.chat.android.client.models.Channel
 import io.getstream.chat.android.client.models.User
 import timber.log.Timber
 
 @Composable
 fun HomeScreen(
-    viewModel: HomeViewModel = viewModel()
+    viewModel: HomeViewModel = viewModel(),
+    onChannelCreated: (Channel) -> Unit,
 ) {
     val isChannelCreateMode by viewModel.channelCreateMode.collectAsStateWithLifecycle()
 
@@ -57,7 +60,14 @@ fun HomeScreen(
         }
 
         Animate(buttonVisibility) {
-            CreateChannelButton(onClick = { viewModel.createChannel() })
+            CreateChannelButton(onClick = {
+                viewModel.createChannel(onSuccess = { onChannelCreated(it) })
+            })
+        }
+
+        val isChannelBeingCreated by viewModel.isChannelBeingCreated.collectAsStateWithLifecycle()
+        if (isChannelBeingCreated) {
+            CircularIndicatorWithDimmedBackground()
         }
     }
 }

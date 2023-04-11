@@ -9,11 +9,14 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.getstream.features.chat.ChatScreen
 import com.getstream.features.home.HomeScreen
 
 @Composable
 fun GetStreamPerusalNavHost(
-    navController: NavHostController, modifier: Modifier
+    navController: NavHostController,
+    modifier: Modifier,
+    onDestinationChanged: (Destination) -> Unit,
 ) {
     NavHost(
         navController = navController,
@@ -21,12 +24,17 @@ fun GetStreamPerusalNavHost(
         modifier = modifier,
     ) {
         composable(route = Home.route) {
-            HomeScreen()
+            HomeScreen(onChannelCreated = {
+                navController.navigate(Chat.channel(it.cid))
+                onDestinationChanged(Chat)
+            })
         }
-        composable(route = Chat.route) {
-            Box(modifier = Modifier.fillMaxSize(1f)) {
-                Text(text = Chat.label, modifier = Modifier.align(Alignment.Center))
-            }
+        composable(
+            route = Chat.route,
+            arguments = Chat.arguments
+        ) {
+            val cid = it.arguments?.getString(Chat.cidArg)
+            ChatScreen(cid)
         }
         composable(route = More.route) {
             Box(modifier = Modifier.fillMaxSize(1f)) {

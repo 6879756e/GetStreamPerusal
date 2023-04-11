@@ -10,6 +10,8 @@ import androidx.compose.material.icons.rounded.ChatBubbleOutline
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.capitalize
 import androidx.compose.ui.text.intl.Locale
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 
 sealed interface Destination {
     val route: String
@@ -30,10 +32,21 @@ object Home : Destination {
 }
 
 object Chat : Destination {
-    override val route = "chat"
+    const val cidArg = "cid"
+
+    override val route = "chat?cid={$cidArg}"
     override val imageVectorOutlined = Icons.Rounded.ChatBubbleOutline
     override val imageVectorFilled = Icons.Rounded.ChatBubble
-    override val label = route.capitalize(Locale.current)
+    override val label = "chat"
+
+    fun channel(cid: String) = "chat?cid=$cid"
+
+    val arguments = listOf(
+        navArgument(cidArg) {
+            type = NavType.StringType
+            nullable = true
+        }
+    )
 }
 
 object More : Destination {
