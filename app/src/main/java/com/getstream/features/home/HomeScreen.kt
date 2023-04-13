@@ -1,5 +1,6 @@
 package com.getstream.features.home
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -42,6 +43,10 @@ fun HomeScreen(
     }
 
     val buttonVisibility by remember { derivedStateOf { isChannelCreateMode && selectedUsers.isNotEmpty() } }
+
+    BackHandler(isChannelCreateMode) {
+        viewModel.toggleChannelCreateMode()
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column {
