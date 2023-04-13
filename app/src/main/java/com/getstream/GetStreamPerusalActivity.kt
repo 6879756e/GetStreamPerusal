@@ -17,6 +17,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.getstream.features.USER_ID_KEY
+import com.getstream.features.profile.ProfileActivity
 import com.getstream.login.LoginActivity
 import com.getstream.navigation.Destination
 import com.getstream.navigation.GetStreamPerusalBottomNavigation
@@ -25,6 +27,7 @@ import com.getstream.navigation.Home
 import com.getstream.ui.theme.GetStreamPerusalTheme
 import dagger.hilt.android.AndroidEntryPoint
 import io.getstream.chat.android.client.models.InitializationState
+import io.getstream.chat.android.client.models.User
 
 @AndroidEntryPoint
 class GetStreamPerusalActivity : ComponentActivity() {
@@ -48,12 +51,23 @@ class GetStreamPerusalActivity : ComponentActivity() {
                 if (clientState == InitializationState.COMPLETE) {
                     val navController = rememberNavController()
 
-                    GetStreamPerusalActivityScreen(navController = navController)
+                    GetStreamPerusalActivityScreen(
+                        navController = navController,
+                        onUserClicked = { startDetailedProfileActivity(it) }
+                    )
 
                     content.viewTreeObserver.removeOnPreDrawListener(onFinishLoadingListener)
                 }
             }
         }
+    }
+
+    private fun startDetailedProfileActivity(user: User) {
+        startActivity(
+            Intent(this, ProfileActivity::class.java).apply {
+                putExtra(USER_ID_KEY, user.id)
+            }
+        )
     }
 
     private fun observeIsLoginRequired() =
@@ -68,6 +82,7 @@ class GetStreamPerusalActivity : ComponentActivity() {
     fun GetStreamPerusalActivityScreen(
         navController: NavHostController,
         modifier: Modifier = Modifier,
+        onUserClicked: (User) -> Unit,
     ) {
         var currentDestination by remember { mutableStateOf<Destination>(Home) }
 
@@ -75,9 +90,13 @@ class GetStreamPerusalActivity : ComponentActivity() {
             modifier = modifier.fillMaxSize(),
             verticalArrangement = Arrangement.Bottom,
         ) {
-            GetStreamPerusalNavHost(navController, modifier.weight(1f), onDestinationChanged = {
-                currentDestination = it
-            })
+            GetStreamPerusalNavHost(
+                navController, modifier.weight(1f),
+                onDestinationChanged = {
+                    currentDestination = it
+                },
+                onUserClicked = onUserClicked
+            )
 
             GetStreamPerusalBottomNavigation(
                 currentDestination = currentDestination,

@@ -25,12 +25,12 @@ import com.getstream.util.clickable
 import com.getstream.util.combinedClickable
 import io.getstream.chat.android.client.models.Channel
 import io.getstream.chat.android.client.models.User
-import timber.log.Timber
 
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel = viewModel(),
     onChannelCreated: (Channel) -> Unit,
+    onUserClicked: (User) -> Unit,
 ) {
     val isChannelCreateMode by viewModel.channelCreateMode.collectAsStateWithLifecycle()
 
@@ -52,7 +52,7 @@ fun HomeScreen(
             UsersList(users = users,
                 isUserSelectState = isChannelCreateMode,
                 selectedUsers = selectedUsers.keys,
-                onClick = { if (!isChannelCreateMode) Timber.e("Row Item clicked: $it") },
+                onClick = { if (!isChannelCreateMode) { onUserClicked(it) } },
                 onLongClick = { if (!isChannelCreateMode) viewModel.startChannelCreateMode() }) { user, isSelected ->
                 viewModel.setUserSelected(user, isSelected)
             }

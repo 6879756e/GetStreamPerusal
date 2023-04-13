@@ -27,6 +27,10 @@
         </activity>
         <activity android:name=".login.LoginActivity"
             android:theme="@style/Theme.GetStreamPerusal"/>
+
+        <activity android:name=".features.profile.ProfileActivity"
+            android:theme="@style/Theme.GetStreamPerusal"/>
+
     </application>
 
 </manifest>

@@ -11,12 +11,14 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.getstream.features.chat.ChatScreen
 import com.getstream.features.home.HomeScreen
+import io.getstream.chat.android.client.models.User
 
 @Composable
 fun GetStreamPerusalNavHost(
     navController: NavHostController,
     modifier: Modifier,
     onDestinationChanged: (Destination) -> Unit,
+    onUserClicked: (User) -> Unit,
 ) {
     NavHost(
         navController = navController,
@@ -24,10 +26,13 @@ fun GetStreamPerusalNavHost(
         modifier = modifier,
     ) {
         composable(route = Home.route) {
-            HomeScreen(onChannelCreated = {
-                navController.navigate(Chat.channel(it.cid))
-                onDestinationChanged(Chat)
-            })
+            HomeScreen(
+                onChannelCreated = {
+                    navController.navigate(Chat.channel(it.cid))
+                    onDestinationChanged(Chat)
+                },
+                onUserClicked = { onUserClicked(it) }
+            )
         }
         composable(
             route = Chat.route,
