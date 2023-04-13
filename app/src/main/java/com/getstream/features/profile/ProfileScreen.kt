@@ -1,6 +1,7 @@
 package com.getstream.features.profile
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -18,6 +19,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
 import com.getstream.ui.core.OnlineIndicator
+import com.getstream.util.getJobDetail
+import com.getstream.util.getStatus
 import io.getstream.chat.android.client.models.User
 
 
@@ -29,86 +32,114 @@ fun ProfileScreen(
     onSetStatusClicked: () -> Unit,
     onEditProfileClicked: () -> Unit,
 ) {
-    Surface(
-        modifier = modifier
-            .fillMaxWidth()
-            .fillMaxHeight(0.8f)
-            .padding(12.dp)
-    ) {
+    Surface(modifier = modifier) {
         val scrollState = rememberScrollState()
 
         Column(
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(DEFAULT_SPACING),
             modifier = Modifier.verticalScroll(scrollState)
         ) {
-            Image(
-                painter = rememberAsyncImagePainter(user.image),
-                contentDescription = null,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(1f)
-                    .clip(RoundedCornerShape(32.dp)),
-                contentScale = ContentScale.Crop
-            )
-
-            Text(
-                text = user.name,
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold
-            )
-
-            if (user.extraData.containsKey("status")) {
-                Text(
-                    text = user.extraData["status"].toString(),
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontStyle = FontStyle.Italic
-                )
-            }
-
-            if (user.extraData.containsKey("job")) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Outlined.Work,
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-
-                    Text(
-                        text = user.extraData["job"].toString(),
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
-            }
-
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                OnlineIndicator(isOnline = user.online, size = 16.dp)
-                Text(
-                    if (user.online) "Online" else "Away",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
+            ProfilePhoto(user)
+            UserName(user.name)
+            if (user.getStatus().isNotEmpty()) Status(user.getStatus())
+            if (user.getJobDetail().isNotEmpty()) Job(user.getJobDetail())
+            OnlineInfo(user.online)
 
             if (isModifiable) {
-                OutlinedButton(
-                    onClick = { onSetStatusClicked() },
-                    shape = RoundedCornerShape(8.dp),
-                    modifier = Modifier.fillMaxWidth(1f)
-                ) {
-                    Text("Set a status")
-                }
+                StatusButton(onSetStatusClicked)
 
-                OutlinedButton(
-                    onClick = { onEditProfileClicked() },
-                    shape = RoundedCornerShape(8.dp),
-                    modifier = Modifier.fillMaxWidth(1f)
-                ) {
-                    Text("Edit Profile")
-                }
+                ProfileButton(onEditProfileClicked)
             }
         }
     }
 }
+
+@Composable
+private fun ProfilePhoto(user: User) {
+    val profilePhotoShape = Modifier
+        .fillMaxWidth()
+        .aspectRatio(1f)
+        .clip(RoundedCornerShape(32.dp))
+
+    if (user.image.isEmpty()) {
+        Box(
+            profilePhotoShape.background(MaterialTheme.colorScheme.primary)
+        ) {
+            val letter = if (user.name.isNotEmpty()) user.name.first() else user.id.first()
+
+            Text(
+                modifier = Modifier.align(Alignment.Center),
+                style = MaterialTheme.typography.displayMedium,
+                text = letter.toString(),
+                color = MaterialTheme.colorScheme.onPrimary,
+            )
+        }
+    } else {
+        Image(
+            painter = rememberAsyncImagePainter(user.image),
+            contentDescription = null,
+            modifier = profilePhotoShape,
+            contentScale = ContentScale.Crop
+        )
+    }
+}
+
+@Composable
+private fun UserName(name: String) {
+    Text(text = name, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+}
+
+@Composable
+private fun Status(status: String) {
+    Text(text = status, style = MaterialTheme.typography.bodyMedium, fontStyle = FontStyle.Italic)
+}
+
+@Composable
+private fun Job(jobTitle: String) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Icon(
+            imageVector = Icons.Outlined.Work,
+            contentDescription = null,
+            modifier = Modifier.size(LEADING_ICON_SIZE)
+        )
+        Spacer(modifier = Modifier.width(DEFAULT_SPACING))
+
+        Text(text = jobTitle, style = MaterialTheme.typography.bodyMedium)
+    }
+}
+
+@Composable
+private fun OnlineInfo(isOnline: Boolean) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(DEFAULT_SPACING)
+    ) {
+        OnlineIndicator(isOnline = isOnline, size = LEADING_ICON_SIZE)
+        Text(if (isOnline) "Online" else "Away", style = MaterialTheme.typography.bodyMedium)
+    }
+}
+
+@Composable
+private fun StatusButton(onSetStatusClicked: () -> Unit) {
+    OutlinedButton(
+        onClick = { onSetStatusClicked() },
+        shape = MaterialTheme.shapes.small,
+        modifier = Modifier.fillMaxWidth(1f)
+    ) {
+        Text("Set a status")
+    }
+}
+
+@Composable
+private fun ProfileButton(onEditProfileClicked: () -> Unit) {
+    OutlinedButton(
+        onClick = { onEditProfileClicked() },
+        shape = MaterialTheme.shapes.small,
+        modifier = Modifier.fillMaxWidth(1f)
+    ) {
+        Text("Edit Profile")
+    }
+}
+
+private val LEADING_ICON_SIZE = 16.dp
+private val DEFAULT_SPACING = 8.dp
