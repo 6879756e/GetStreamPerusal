@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
 import com.getstream.ui.core.OnlineIndicator
 import com.getstream.ui.core.AsyncImageWithPlaceholder
+import com.getstream.ui.core.MaxWidthOutlinedButton
 import com.getstream.util.getJobDetail
 import com.getstream.util.getStatus
 import io.getstream.chat.android.client.models.User
@@ -130,22 +131,14 @@ private fun OnlineInfo(isOnline: Boolean) {
 
 @Composable
 private fun StatusButton(onSetStatusClicked: () -> Unit) {
-    OutlinedButton(
-        onClick = { onSetStatusClicked() },
-        shape = MaterialTheme.shapes.small,
-        modifier = Modifier.fillMaxWidth(1f)
-    ) {
+    MaxWidthOutlinedButton(onClick = onSetStatusClicked) {
         Text("Set a status")
     }
 }
 
 @Composable
 private fun ProfileButton(onEditProfileClicked: () -> Unit) {
-    OutlinedButton(
-        onClick = { onEditProfileClicked() },
-        shape = MaterialTheme.shapes.small,
-        modifier = Modifier.fillMaxWidth(1f)
-    ) {
+    MaxWidthOutlinedButton(onClick = onEditProfileClicked) {
         Text("Edit Profile")
     }
 }
