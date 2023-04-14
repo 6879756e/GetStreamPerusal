@@ -60,7 +60,8 @@ fun HomeScreen(
                         contentDescription = "",
                         modifier = Modifier
                             .size(48.dp)
-                            .padding(8.dp)
+                            .padding(8.dp),
+                        tint = MaterialTheme.colorScheme.onPrimary
                     )
                 }
             }
