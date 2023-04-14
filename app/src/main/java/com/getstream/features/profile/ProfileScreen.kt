@@ -34,27 +34,25 @@ fun ProfileScreen(
     onSetStatusClicked: () -> Unit,
     onEditProfileClicked: () -> Unit,
 ) {
-    Surface(modifier = modifier) {
-        val scrollState = rememberScrollState()
+    val scrollState = rememberScrollState()
 
-        Column(
-            verticalArrangement = Arrangement.spacedBy(DEFAULT_SPACING),
-            modifier = Modifier.verticalScroll(scrollState)
-        ) {
-            Spacer(modifier = Modifier.height(verticalContentPadding))
-            ProfilePhoto(user)
-            UserName(user.name)
-            if (user.getStatus().isNotEmpty()) Status(user.getStatus())
-            if (user.getJobDetail().isNotEmpty()) Job(user.getJobDetail())
-            OnlineInfo(user.online)
+    Column(
+        verticalArrangement = Arrangement.spacedBy(DEFAULT_SPACING),
+        modifier = modifier.verticalScroll(scrollState)
+    ) {
+        Spacer(modifier = Modifier.height(verticalContentPadding))
+        ProfilePhoto(user)
+        UserName(user.name)
+        if (user.getStatus().isNotEmpty()) Status(user.getStatus())
+        if (user.getJobDetail().isNotEmpty()) Job(user.getJobDetail())
+        OnlineInfo(user.online)
 
-            if (isModifiable) {
-                StatusButton(onSetStatusClicked)
+        if (isModifiable) {
+            StatusButton(onSetStatusClicked)
 
-                ProfileButton(onEditProfileClicked)
-            }
-            Spacer(modifier = Modifier.height(verticalContentPadding))
+            ProfileButton(onEditProfileClicked)
         }
+        Spacer(modifier = Modifier.height(verticalContentPadding))
     }
 }
 

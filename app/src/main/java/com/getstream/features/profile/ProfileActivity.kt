@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -30,15 +31,17 @@ class ProfileActivity : ComponentActivity() {
                 val user by viewModel.user.collectAsStateWithLifecycle()
 
                 user?.run {
-                    ProfileScreen(
-                        user = this,
-                        isModifiable = isSelf(),
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(horizontal = 16.dp),
-                        onSetStatusClicked = {},
-                        onEditProfileClicked = {}
-                    )
+                    Surface {
+                        ProfileScreen(
+                            user = this,
+                            isModifiable = isSelf(),
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(horizontal = 16.dp),
+                            onSetStatusClicked = {},
+                            onEditProfileClicked = {}
+                        )
+                    }
                 } ?: CircularIndicatorWithDimmedBackground()
             }
         }
