@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.getstream.ui.core.CircularIndicatorWithDimmedBackground
+import com.getstream.ui.core.TopBar
 import com.getstream.ui.core.UserRowItem
 import com.getstream.util.clickable
 import com.getstream.util.combinedClickable
@@ -50,8 +51,18 @@ fun HomeScreen(
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column {
-            TopBar(topBarState) {
-                viewModel.toggleChannelCreateMode()
+            TopBar(title = "Colleagues") {
+                IconButton(onClick = {
+                    viewModel.toggleChannelCreateMode()
+                }) {
+                    Icon(
+                        imageVector = topBarState.imageVector,
+                        contentDescription = "",
+                        modifier = Modifier
+                            .size(48.dp)
+                            .padding(8.dp)
+                    )
+                }
             }
 
             UsersList(users = users,
@@ -73,36 +84,6 @@ fun HomeScreen(
         val isChannelBeingCreated by viewModel.isChannelBeingCreated.collectAsStateWithLifecycle()
         if (isChannelBeingCreated) {
             CircularIndicatorWithDimmedBackground()
-        }
-    }
-}
-
-@Composable
-private fun TopBar(
-    topBarState: HomeViewModel.TopBarState,
-    onIconClicked: (HomeViewModel.TopBarState) -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp)
-            .height(40.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = "Colleagues",
-            style = MaterialTheme.typography.headlineSmall,
-            modifier = Modifier.weight(1f)
-        )
-
-        IconButton(onClick = { onIconClicked(topBarState) }) {
-            Icon(
-                imageVector = topBarState.imageVector,
-                contentDescription = "",
-                modifier = Modifier
-                    .size(48.dp)
-                    .padding(8.dp)
-            )
         }
     }
 }
