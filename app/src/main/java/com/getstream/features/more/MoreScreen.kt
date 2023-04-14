@@ -19,6 +19,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.getstream.ui.core.MaxWidthOutlinedButton
 import com.getstream.ui.core.TopBar
 import com.getstream.ui.core.UserRowItem
+import com.getstream.util.appearsOnline
 import com.getstream.util.clickable
 import io.getstream.chat.android.client.models.User
 
@@ -37,7 +38,12 @@ fun MoreScreen(
             ProfileScreenColumn {
                 User(user, onUserClicked)
                 StatusButton { }
-                OnlineStatus(user.online)
+                OnlineStatus(
+                    isOnline = user.appearsOnline(),
+                    modifier = Modifier.clickable {
+                        viewModel.toggleOnlineStatus()
+                    }
+                )
             }
             Divider()
             ProfileScreenColumn {
@@ -61,14 +67,11 @@ private fun ProfileScreenColumn(
 }
 
 @Composable
-private fun User(
-    user: User,
-    onUserClicked: (User) -> Unit
-) {
+private fun User(user: User, onUserClicked: (User) -> Unit) {
     UserRowItem(
         displayName = user.name,
         imageUrl = user.image,
-        isOnline = user.online,
+        isOnline = user.appearsOnline(),
         modifier = Modifier.clickable {
             onUserClicked(user)
         }

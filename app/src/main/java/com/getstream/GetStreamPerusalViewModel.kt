@@ -7,10 +7,12 @@ import androidx.lifecycle.viewModelScope
 import com.getstream.data.DataStoreRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.getstream.chat.android.client.ChatClient
+import io.getstream.chat.android.client.models.InitializationState
 import io.getstream.chat.android.client.models.User
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -21,24 +23,27 @@ class GetStreamPerusalViewModel @Inject constructor(
 
     private val isLoginRequired = MutableStateFlow(false)
 
-    val clientState = ChatClient.instance().clientState.initializationState
+    val clientState = MutableStateFlow(InitializationState.NOT_INITIALIZED)
 
     private val jwtToken: Flow<String> = dataStoreRepository.getUserJwtToken()
     private val emailAddress: Flow<String> = dataStoreRepository.getUserEmail()
     private val displayName: Flow<String> = dataStoreRepository.getUserDisplayName()
 
     init {
-        viewModelScope.launch {
-            combine(jwtToken, emailAddress, displayName) { token, email, name ->
-                if (token.isEmpty()) return@combine null
+        signInIfUserDataPresent()
+        updateClientStateOnFirstConnection()
+    }
 
-                User(id = email, name = name) to token
-            }.collect { userInfo ->
-                if (userInfo == null) {
-                    isLoginRequired.value = true
-                } else if (ChatClient.instance().getCurrentUser() == null) {
-                    attemptToSignIn(userInfo.first, userInfo.second)
-                }
+    private fun signInIfUserDataPresent() = viewModelScope.launch {
+        combine(jwtToken, emailAddress, displayName) { token, email, name ->
+            if (token.isEmpty()) return@combine null
+
+            User(id = email, name = name) to token
+        }.collect { userInfo ->
+            if (userInfo == null) {
+                isLoginRequired.value = true
+            } else if (ChatClient.instance().getCurrentUser() == null) {
+                attemptToSignIn(userInfo.first, userInfo.second)
             }
         }
     }
@@ -46,6 +51,12 @@ class GetStreamPerusalViewModel @Inject constructor(
     private fun attemptToSignIn(user: User, token: String) = connectUser(user, token) { result ->
         if (result.isError) {
             viewModelScope.launch { dataStoreRepository.clearUserData() }
+        }
+    }
+
+    private fun updateClientStateOnFirstConnection() = viewModelScope.launch {
+        clientState.value = ChatClient.instance().clientState.initializationState.first {
+            it == InitializationState.COMPLETE
         }
     }
 
