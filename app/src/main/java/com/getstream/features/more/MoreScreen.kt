@@ -14,8 +14,8 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.getstream.ui.core.MaxWidthOutlinedButton
 import com.getstream.ui.core.TopBar
 import com.getstream.ui.core.UserRowItem
@@ -25,7 +25,7 @@ import io.getstream.chat.android.client.models.User
 
 @Composable
 fun MoreScreen(
-    viewModel: MoreViewModel = viewModel(),
+    viewModel: MoreViewModel = hiltViewModel(),
     onUserClicked: (User) -> Unit,
 ) {
     val user by viewModel.user.collectAsStateWithLifecycle()

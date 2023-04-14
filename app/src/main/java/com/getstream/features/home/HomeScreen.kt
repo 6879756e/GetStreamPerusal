@@ -18,8 +18,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.getstream.ui.core.CircularIndicatorWithDimmedBackground
 import com.getstream.ui.core.TopBar
 import com.getstream.ui.core.UserRowItem
@@ -30,7 +30,7 @@ import io.getstream.chat.android.client.models.User
 
 @Composable
 fun HomeScreen(
-    viewModel: HomeViewModel = viewModel(),
+    viewModel: HomeViewModel = hiltViewModel(),
     onChannelCreated: (Channel) -> Unit,
     onUserClicked: (User) -> Unit,
 ) {
