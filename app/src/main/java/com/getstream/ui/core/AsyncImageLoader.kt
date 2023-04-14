@@ -1,4 +1,4 @@
-package com.getstream.util
+package com.getstream.ui.core
 
 import androidx.compose.animation.*
 import androidx.compose.foundation.Image

@@ -18,7 +18,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
 import com.getstream.ui.core.OnlineIndicator
-import com.getstream.util.AsyncImageWithPlaceholder
+import com.getstream.ui.core.AsyncImageWithPlaceholder
 import com.getstream.util.getJobDetail
 import com.getstream.util.getStatus
 import io.getstream.chat.android.client.models.User
