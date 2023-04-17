@@ -1,25 +1,37 @@
 package com.getstream.features.profile
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Face
 import androidx.compose.material.icons.outlined.Work
+import androidx.compose.material.icons.rounded.Cancel
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.rememberAsyncImagePainter
-import com.getstream.ui.core.OnlineIndicator
 import com.getstream.ui.core.AsyncImageWithPlaceholder
 import com.getstream.ui.core.MaxWidthOutlinedButton
+import com.getstream.ui.core.OnlineIndicator
 import com.getstream.util.getJobDetail
 import com.getstream.util.getStatus
 import io.getstream.chat.android.client.models.User
@@ -31,10 +43,11 @@ fun ProfileScreen(
     isModifiable: Boolean,
     modifier: Modifier = Modifier,
     verticalContentPadding: Dp = 16.dp,
-    onSetStatusClicked: () -> Unit,
+    viewModel: ProfileViewModel = hiltViewModel(),
     onEditProfileClicked: () -> Unit,
 ) {
     val scrollState = rememberScrollState()
+    val isEditStatusMode by viewModel.isEditStatusMode.collectAsStateWithLifecycle()
 
     Column(
         verticalArrangement = Arrangement.spacedBy(DEFAULT_SPACING),
@@ -48,7 +61,11 @@ fun ProfileScreen(
         OnlineInfo(user.online)
 
         if (isModifiable) {
-            StatusButton(onSetStatusClicked)
+            Status(
+                isEditStatusMode,
+                onStatusButtonClicked = { viewModel.toggleEditStatusMode() },
+                onSubmitClicked = { viewModel.setStatus(it) }
+            )
 
             ProfileButton(onEditProfileClicked)
         }
@@ -128,16 +145,72 @@ private fun OnlineInfo(isOnline: Boolean) {
 }
 
 @Composable
-private fun StatusButton(onSetStatusClicked: () -> Unit) {
-    MaxWidthOutlinedButton(onClick = onSetStatusClicked) {
-        Text("Set a status")
+private fun ProfileButton(onEditProfileClicked: () -> Unit) {
+    MaxWidthOutlinedButton(onClick = onEditProfileClicked) {
+        Text("Edit Profile")
+    }
+}
+
+
+@Composable
+private fun Status(
+    isEditStatusMode: Boolean,
+    onStatusButtonClicked: () -> Unit,
+    onSubmitClicked: (String) -> Unit,
+) {
+    StatusButton(onClick = onStatusButtonClicked) {
+        if (isEditStatusMode) {
+            var textFieldValue by rememberSaveable { mutableStateOf("") }
+
+            TextField(
+                value = textFieldValue,
+                onValueChange = { textFieldValue = it },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                trailingIcon = {
+                    if (textFieldValue.isNotEmpty()) {
+                        IconButton(onClick = { textFieldValue = "" }) {
+                            Icon(
+                                imageVector = Icons.Rounded.Cancel,
+                                contentDescription = "Cancel input"
+                            )
+                        }
+                    }
+                },
+                placeholder = { Text("Enter your status here") },
+                keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(onDone = {
+                    onSubmitClicked(textFieldValue)
+                }),
+            )
+        }
     }
 }
 
 @Composable
-private fun ProfileButton(onEditProfileClicked: () -> Unit) {
-    MaxWidthOutlinedButton(onClick = onEditProfileClicked) {
-        Text("Edit Profile")
+private fun StatusButton(onClick: () -> Unit, content: @Composable () -> Unit) {
+    val color = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
+
+    MaxWidthOutlinedButton(onClick = onClick) {
+        Column(Modifier.animateContentSize()) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Outlined.Face,
+                    contentDescription = null,
+                    modifier = Modifier.padding(vertical = 4.dp),
+                    tint = color
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    "What's your status?",
+                    modifier = Modifier.weight(1f),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = color
+                )
+            }
+            content()
+        }
     }
 }
 

@@ -37,10 +37,10 @@ class ProfileActivity : ComponentActivity() {
                             isModifiable = isSelf(),
                             modifier = Modifier
                                 .fillMaxSize()
-                                .padding(horizontal = 16.dp),
-                            onSetStatusClicked = {},
-                            onEditProfileClicked = {}
-                        )
+                                .padding(horizontal = 16.dp)
+                        ) {
+
+                        }
                     }
                 } ?: CircularIndicatorWithDimmedBackground()
             }

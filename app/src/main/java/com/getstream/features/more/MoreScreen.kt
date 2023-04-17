@@ -1,32 +1,21 @@
 package com.getstream.features.more
 
-import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AccountCircle
-import androidx.compose.material.icons.outlined.Face
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.SettingsSuggest
-import androidx.compose.material.icons.rounded.Cancel
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.getstream.ui.core.MaxWidthOutlinedButton
 import com.getstream.ui.core.TopBar
 import com.getstream.ui.core.UserRowItem
 import com.getstream.util.appearsOnline
@@ -41,7 +30,6 @@ fun MoreScreen(
     onUserClicked: (User) -> Unit,
 ) {
     val user by viewModel.user.collectAsStateWithLifecycle()
-    val isEditStatusMode by viewModel.isEditStatusMode.collectAsStateWithLifecycle()
 
     Surface(modifier = Modifier.fillMaxSize()) {
         Column {
@@ -49,11 +37,6 @@ fun MoreScreen(
 
             ProfileScreenColumn {
                 User(user, onUserClicked)
-                Status(
-                    isEditStatusMode,
-                    onStatusButtonClicked = { viewModel.toggleEditStatusMode() },
-                    onSubmitClicked = { viewModel.setStatus(it) }
-                )
                 OnlineStatus(
                     isOnline = user.appearsOnline(),
                     modifier = Modifier.clickable {
@@ -63,47 +46,11 @@ fun MoreScreen(
             }
             Divider()
             ProfileScreenColumn {
-                EditProfile()
+                EditProfile(Modifier.clickable { onUserClicked(user) })
                 Preferences()
             }
         }
 
-    }
-}
-
-@Composable
-private fun Status(
-    isEditStatusMode: Boolean,
-    onStatusButtonClicked: () -> Unit,
-    onSubmitClicked: (String) -> Unit,
-) {
-    StatusButton(onClick = onStatusButtonClicked) {
-        if (isEditStatusMode) {
-            var textFieldValue by rememberSaveable { mutableStateOf("") }
-
-            TextField(
-                value = textFieldValue,
-                onValueChange = { textFieldValue = it },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp),
-                trailingIcon = {
-                    if (textFieldValue.isNotEmpty()) {
-                        IconButton(onClick = { textFieldValue = "" }) {
-                            Icon(
-                                imageVector = Icons.Rounded.Cancel,
-                                contentDescription = "Cancel input"
-                            )
-                        }
-                    }
-                },
-                placeholder = { Text("Enter your status here") },
-                keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
-                keyboardActions = KeyboardActions(onDone = {
-                    onSubmitClicked(textFieldValue)
-                }),
-            )
-        }
     }
 }
 
@@ -140,32 +87,6 @@ private fun User(user: User, onUserClicked: (User) -> Unit) {
 }
 
 @Composable
-private fun StatusButton(onClick: () -> Unit, content: @Composable () -> Unit) {
-    val color = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
-
-    MaxWidthOutlinedButton(onClick = onClick) {
-        Column(Modifier.animateContentSize()) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    imageVector = Icons.Outlined.Face,
-                    contentDescription = null,
-                    modifier = Modifier.padding(vertical = 4.dp),
-                    tint = color
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    "What's your status?",
-                    modifier = Modifier.weight(1f),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = color
-                )
-            }
-            content()
-        }
-    }
-}
-
-@Composable
 private fun ProfileScreenRow(modifier: Modifier = Modifier, content: @Composable () -> Unit) =
     Row(
         modifier = modifier.padding(vertical = 8.dp),
@@ -196,7 +117,7 @@ private fun OnlineStatus(isOnline: Boolean, modifier: Modifier = Modifier) {
 
 @Composable
 private fun EditProfile(modifier: Modifier = Modifier) {
-    ProfileScreenRow(modifier) {
+    ProfileScreenRow(modifier.fillMaxWidth()) {
         Icon(imageVector = Icons.Outlined.Person, contentDescription = null)
         Text("Edit profile")
     }
@@ -204,7 +125,7 @@ private fun EditProfile(modifier: Modifier = Modifier) {
 
 @Composable
 fun Preferences(modifier: Modifier = Modifier) {
-    ProfileScreenRow(modifier) {
+    ProfileScreenRow(modifier.fillMaxWidth()) {
         Icon(imageVector = Icons.Outlined.SettingsSuggest, contentDescription = null)
         Text("Preferences")
     }

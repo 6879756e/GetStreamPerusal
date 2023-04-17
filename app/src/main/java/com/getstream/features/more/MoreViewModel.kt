@@ -3,8 +3,6 @@ package com.getstream.features.more
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.getstream.data.DataStoreRepository
-import com.getstream.util.getStatus
-import com.getstream.util.statusKey
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.getstream.chat.android.client.ChatClient
 import io.getstream.chat.android.client.models.User
@@ -41,22 +39,5 @@ class MoreViewModel @Inject constructor(
                     }
                 }
         }
-    }
-
-    fun toggleEditStatusMode() {
-        isEditStatusMode.value = !isEditStatusMode.value
-    }
-
-    fun setStatus(status: String) {
-        if (user.value.getStatus() != status) {
-            ChatClient.instance()
-                .partialUpdateUser(user.value.id, mapOf(user.value.statusKey to status))
-                .enqueue { result ->
-                    if (result.isSuccess) {
-                        result.onSuccess { updatedUser -> user.value = updatedUser }
-                    }
-                }
-        }
-        isEditStatusMode.value = false
     }
 }
