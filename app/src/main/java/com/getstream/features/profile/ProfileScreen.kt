@@ -5,25 +5,31 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Face
 import androidx.compose.material.icons.outlined.Work
-import androidx.compose.material.icons.rounded.Cancel
-import androidx.compose.material3.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.focus.FocusManager
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -44,10 +50,13 @@ fun ProfileScreen(
     modifier: Modifier = Modifier,
     verticalContentPadding: Dp = 16.dp,
     viewModel: ProfileViewModel = hiltViewModel(),
-    onEditProfileClicked: () -> Unit,
 ) {
     val scrollState = rememberScrollState()
-    val isEditStatusMode by viewModel.isEditStatusMode.collectAsStateWithLifecycle()
+    val isEditMode by viewModel.isEditMode.collectAsStateWithLifecycle()
+
+    val username by viewModel.username.collectAsStateWithLifecycle()
+    val status by viewModel.status.collectAsStateWithLifecycle()
+    val job by viewModel.job.collectAsStateWithLifecycle()
 
     Column(
         verticalArrangement = Arrangement.spacedBy(DEFAULT_SPACING),
@@ -55,22 +64,32 @@ fun ProfileScreen(
     ) {
         Spacer(modifier = Modifier.height(verticalContentPadding))
         ProfilePhoto(user)
-        UserName(user.name)
-        if (user.getStatus().isNotEmpty()) Status(user.getStatus())
-        if (user.getJobDetail().isNotEmpty()) Job(user.getJobDetail())
+        UserName(
+            textFieldValue = username,
+            onValueChange = { viewModel.setUserName(it) },
+            isEditMode = isEditMode,
+        )
+        if (user.getStatus().isNotEmpty() || isEditMode) {
+            Status(
+                textFieldValue = status, onValueChange = { viewModel.setUserStatus(it) }, isEditMode
+            )
+        }
+        if (user.getJobDetail().isNotEmpty() || isEditMode) {
+            Job(
+                textFieldValue = job, onValueChange = { viewModel.setJobDetail(it) }, isEditMode
+            )
+        }
         OnlineInfo(user.online)
 
         if (isModifiable) {
-            Status(
-                isEditStatusMode,
-                onStatusButtonClicked = { viewModel.toggleEditStatusMode() },
-                onSubmitClicked = { viewModel.setStatus(it) }
-            )
-
-            ProfileButton(onEditProfileClicked)
+            EditProfile(isEditMode, viewModel)
         }
         Spacer(modifier = Modifier.height(verticalContentPadding))
     }
+}
+
+private fun FocusManager.moveFocusDown() {
+    moveFocus(FocusDirection.Down)
 }
 
 @Composable
@@ -98,7 +117,7 @@ private fun PlaceholderProfile(modifier: Modifier, user: User) {
     Box(
         modifier = modifier.background(MaterialTheme.colorScheme.primary)
     ) {
-        val letter = if (user.name.isNotEmpty()) user.name.first() else user.id.first()
+        val letter = if (user.name.isNotEmpty()) user.name.first() else user.id.firstOrNull()
 
         Text(
             modifier = Modifier.align(Alignment.Center),
@@ -110,17 +129,62 @@ private fun PlaceholderProfile(modifier: Modifier, user: User) {
 }
 
 @Composable
-private fun UserName(name: String) {
-    Text(text = name, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+private fun UserName(
+    textFieldValue: TextFieldValue,
+    onValueChange: (TextFieldValue) -> Unit,
+    isEditMode: Boolean,
+) {
+    val focusRequester = FocusRequester()
+
+    if (isEditMode) {
+        LaunchedEffect(Unit) {
+            focusRequester.requestFocus()
+        }
+    }
+
+    val focusManager = LocalFocusManager.current
+
+    BasicTextField(
+        value = textFieldValue,
+        onValueChange = onValueChange,
+        enabled = isEditMode,
+        textStyle = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
+        keyboardActions = KeyboardActions(onDone = {
+            focusManager.moveFocusDown()
+        }),
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+        modifier = Modifier.focusRequester(focusRequester)
+    )
 }
 
 @Composable
-private fun Status(status: String) {
-    Text(text = status, style = MaterialTheme.typography.bodyMedium, fontStyle = FontStyle.Italic)
+private fun Status(
+    textFieldValue: TextFieldValue,
+    onValueChange: (TextFieldValue) -> Unit,
+    isEditMode: Boolean
+) {
+    val focusManager = LocalFocusManager.current
+
+    BasicTextField(
+        value = textFieldValue,
+        onValueChange = onValueChange,
+        enabled = isEditMode,
+        textStyle = MaterialTheme.typography.bodyMedium.copy(fontStyle = FontStyle.Italic),
+        keyboardActions = KeyboardActions(onDone = {
+            focusManager.moveFocusDown()
+        }),
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
+    )
 }
 
 @Composable
-private fun Job(jobTitle: String) {
+private fun Job(
+    textFieldValue: TextFieldValue,
+    onValueChange: (TextFieldValue) -> Unit,
+    isEditMode: Boolean
+) {
+    val focusManager = LocalFocusManager.current
+
     Row(verticalAlignment = Alignment.CenterVertically) {
         Icon(
             imageVector = Icons.Outlined.Work,
@@ -129,7 +193,16 @@ private fun Job(jobTitle: String) {
         )
         Spacer(modifier = Modifier.width(DEFAULT_SPACING))
 
-        Text(text = jobTitle, style = MaterialTheme.typography.bodyMedium)
+        BasicTextField(
+            value = textFieldValue,
+            onValueChange = onValueChange,
+            enabled = isEditMode,
+            textStyle = MaterialTheme.typography.bodyMedium,
+            keyboardActions = KeyboardActions(onDone = {
+                focusManager.clearFocus()
+            }),
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done)
+        )
     }
 }
 
@@ -151,65 +224,28 @@ private fun ProfileButton(onEditProfileClicked: () -> Unit) {
     }
 }
 
-
 @Composable
-private fun Status(
-    isEditStatusMode: Boolean,
-    onStatusButtonClicked: () -> Unit,
-    onSubmitClicked: (String) -> Unit,
+private fun EditProfile(
+    isEditMode: Boolean,
+    viewModel: ProfileViewModel
 ) {
-    StatusButton(onClick = onStatusButtonClicked) {
-        if (isEditStatusMode) {
-            var textFieldValue by rememberSaveable { mutableStateOf("") }
-
-            TextField(
-                value = textFieldValue,
-                onValueChange = { textFieldValue = it },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp),
-                trailingIcon = {
-                    if (textFieldValue.isNotEmpty()) {
-                        IconButton(onClick = { textFieldValue = "" }) {
-                            Icon(
-                                imageVector = Icons.Rounded.Cancel,
-                                contentDescription = "Cancel input"
-                            )
-                        }
-                    }
-                },
-                placeholder = { Text("Enter your status here") },
-                keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
-                keyboardActions = KeyboardActions(onDone = {
-                    onSubmitClicked(textFieldValue)
-                }),
-            )
-        }
-    }
-}
-
-@Composable
-private fun StatusButton(onClick: () -> Unit, content: @Composable () -> Unit) {
-    val color = MaterialTheme.colorScheme.primary.copy(alpha = 0.8f)
-
-    MaxWidthOutlinedButton(onClick = onClick) {
-        Column(Modifier.animateContentSize()) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    imageVector = Icons.Outlined.Face,
-                    contentDescription = null,
-                    modifier = Modifier.padding(vertical = 4.dp),
-                    tint = color
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    "What's your status?",
-                    modifier = Modifier.weight(1f),
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = color
-                )
+    Row(modifier = Modifier.animateContentSize()) {
+        if (isEditMode) {
+            OutlinedButton(onClick = {
+                viewModel.cancelEdit()
+            }, modifier = Modifier.weight(1f)) {
+                Text("Cancel", color = MaterialTheme.colorScheme.secondary)
             }
-            content()
+            Spacer(modifier = Modifier.size(16.dp))
+            OutlinedButton(
+                onClick = { viewModel.updateUser() }, modifier = Modifier.weight(1f)
+            ) {
+                Text("Save")
+            }
+        } else {
+            ProfileButton {
+                viewModel.toggleEditMode()
+            }
         }
     }
 }

@@ -30,23 +30,23 @@ class ProfileActivity : ComponentActivity() {
             GetStreamPerusalTheme {
                 val user by viewModel.user.collectAsStateWithLifecycle()
 
-                user?.run {
+                if (user.id.isNotEmpty()) {
                     Surface {
                         ProfileScreen(
-                            user = this,
-                            isModifiable = isSelf(),
+                            user = user,
+                            isModifiable = user.isSelf(),
                             modifier = Modifier
                                 .fillMaxSize()
                                 .padding(horizontal = 16.dp)
-                        ) {
-
-                        }
+                        )
                     }
-                } ?: CircularIndicatorWithDimmedBackground()
+                } else {
+                    CircularIndicatorWithDimmedBackground()
+                }
             }
-        }
 
-        onErrorLoading()
+            onErrorLoading()
+        }
     }
 
     private fun onErrorLoading() {

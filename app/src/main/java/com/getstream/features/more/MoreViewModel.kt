@@ -18,7 +18,6 @@ class MoreViewModel @Inject constructor(
 ) : ViewModel() {
 
     val user = MutableStateFlow(ChatClient.instance().getCurrentUser()!!)
-    val isEditStatusMode = MutableStateFlow(false)
 
     fun toggleOnlineStatus() {
         viewModelScope.launch {
