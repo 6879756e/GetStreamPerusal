@@ -14,6 +14,17 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         tools:targetApi="31">
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="com.getstream.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
         <activity
             android:name=".GetStreamPerusalActivity"
             android:exported="true"
@@ -25,12 +36,18 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".login.LoginActivity"
-            android:theme="@style/Theme.GetStreamPerusal"/>
+        <activity
+            android:name=".login.LoginActivity"
+            android:theme="@style/Theme.GetStreamPerusal" />
 
-        <activity android:name=".features.profile.ProfileActivity"
-            android:theme="@style/Theme.GetStreamPerusal"/>
+        <activity
+            android:name=".features.profile.ProfileActivity"
+            android:theme="@style/Theme.GetStreamPerusal" />
 
+        <!--  Just for testing purposes -->
+        <activity android:name=".TestActivity"
+            android:exported="true"
+            android:theme="@style/Theme.GetStreamPerusal"/>
     </application>
 
 </manifest>
