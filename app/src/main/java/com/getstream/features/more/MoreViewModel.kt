@@ -39,4 +39,8 @@ class MoreViewModel @Inject constructor(
                 }
         }
     }
+
+    fun refreshUser() {
+        user.value = ChatClient.instance().getCurrentUser()!!
+    }
 }

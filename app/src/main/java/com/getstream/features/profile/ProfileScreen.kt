@@ -1,6 +1,10 @@
 package com.getstream.features.profile
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.slideIn
+import androidx.compose.animation.slideOut
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -10,14 +14,17 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.HideImage
+import androidx.compose.material.icons.filled.PhotoCamera
+import androidx.compose.material.icons.filled.PhotoLibrary
+import androidx.compose.material.icons.outlined.AddAPhoto
+import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material.icons.outlined.Work
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -25,19 +32,26 @@ import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.rememberAsyncImagePainter
+import coil.request.CachePolicy
+import coil.request.ImageRequest
 import com.getstream.ui.core.AsyncImageWithPlaceholder
 import com.getstream.ui.core.MaxWidthOutlinedButton
 import com.getstream.ui.core.OnlineIndicator
+import com.getstream.util.clickable
 import com.getstream.util.getJobDetail
 import com.getstream.util.getStatus
 import io.getstream.chat.android.client.models.User
@@ -50,6 +64,7 @@ fun ProfileScreen(
     modifier: Modifier = Modifier,
     verticalContentPadding: Dp = 16.dp,
     viewModel: ProfileViewModel = hiltViewModel(),
+    onProfileImageChangeRequested: (ProfileImageRequest) -> Unit,
 ) {
     val scrollState = rememberScrollState()
     val isEditMode by viewModel.isEditMode.collectAsStateWithLifecycle()
@@ -63,7 +78,9 @@ fun ProfileScreen(
         modifier = modifier.verticalScroll(scrollState)
     ) {
         Spacer(modifier = Modifier.height(verticalContentPadding))
-        ProfilePhoto(user)
+        ProfilePhoto(user, isEditMode) {
+            viewModel.setProfileImageDialogVisible()
+        }
         UserName(
             textFieldValue = username,
             onValueChange = { viewModel.setUserName(it) },
@@ -86,6 +103,66 @@ fun ProfileScreen(
         }
         Spacer(modifier = Modifier.height(verticalContentPadding))
     }
+
+    val profileImageDialogVisible by viewModel.profileImageDialogVisible.collectAsStateWithLifecycle()
+
+    if (profileImageDialogVisible) {
+        Dialog(onDismissRequest = { viewModel.setProfileImageDialogGone() }) {
+            Card {
+                Column(modifier = Modifier.padding(32.dp)) {
+                    Text(
+                        text = "Update your profile image",
+                        style = MaterialTheme.typography.headlineSmall
+                    )
+
+                    Spacer(modifier = Modifier.height(40.dp))
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .clickable { onProfileImageChangeRequested(ProfileImageRequest.CAMERA) }
+                            .padding(8.dp),
+                    ) {
+                        Icon(imageVector = Icons.Default.PhotoCamera, contentDescription = "")
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Take a picture",
+                            style = MaterialTheme.typography.titleMedium,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                    Divider(modifier = Modifier.padding(4.dp))
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .clickable { onProfileImageChangeRequested(ProfileImageRequest.GALLERY) }
+                            .padding(8.dp)
+                    ) {
+                        Icon(imageVector = Icons.Default.PhotoLibrary, contentDescription = "")
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Choose from gallery",
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                    }
+                    Divider(modifier = Modifier.padding(4.dp))
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .clickable { onProfileImageChangeRequested(ProfileImageRequest.CLEAR) }
+                            .padding(8.dp)
+                    ) {
+                        Icon(imageVector = Icons.Default.HideImage, contentDescription = "")
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Clear profile image",
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                    }
+                }
+            }
+        }
+    }
 }
 
 private fun FocusManager.moveFocusDown() {
@@ -93,22 +170,57 @@ private fun FocusManager.moveFocusDown() {
 }
 
 @Composable
-private fun ProfilePhoto(user: User) {
+private fun ProfilePhoto(
+    user: User,
+    isEditMode: Boolean,
+    onImageClicked: () -> Unit
+) {
     val profilePhotoShape = Modifier
         .fillMaxWidth()
         .aspectRatio(1f)
         .clip(RoundedCornerShape(32.dp))
 
-    if (user.image.isEmpty()) {
-        PlaceholderProfile(profilePhotoShape, user)
-    } else {
-        AsyncImageWithPlaceholder(
-            painter = rememberAsyncImagePainter(user.image),
-            placeholder = { PlaceholderProfile(profilePhotoShape, user) },
-            modifier = profilePhotoShape,
-            contentDescription = null,
-            isAnimated = false
-        )
+    Box {
+        if (user.image.isEmpty()) {
+            PlaceholderProfile(profilePhotoShape, user)
+        } else {
+            val context = LocalContext.current
+
+            AsyncImageWithPlaceholder(
+                painter = rememberAsyncImagePainter(
+                    remember(user.image) {
+                        ImageRequest.Builder(context)
+                            .data(user.image)
+                            .diskCachePolicy(CachePolicy.DISABLED)
+                            .memoryCachePolicy(CachePolicy.DISABLED)
+                            .build()
+                    }
+                ),
+                placeholder = { PlaceholderProfile(profilePhotoShape, user) },
+                modifier = profilePhotoShape,
+                contentDescription = null,
+                isAnimated = false
+            )
+        }
+
+        AnimatedVisibility(
+            visible = isEditMode,
+            enter = slideIn { IntOffset(0, it.height) },
+            exit = slideOut { IntOffset(0, it.height) },
+            modifier = Modifier.align(Alignment.BottomEnd)
+        ) {
+            IconButton(
+                onClick = onImageClicked,
+                modifier = Modifier.padding(8.dp)
+            ) {
+                Image(
+                    imageVector = if (user.image.isEmpty()) Icons.Outlined.AddAPhoto else Icons.Outlined.Image,
+                    contentDescription = "Click to change profile",
+                    colorFilter = ColorFilter.tint(color = MaterialTheme.colorScheme.onPrimary),
+                    modifier = Modifier.size(64.dp)
+                )
+            }
+        }
     }
 }
 

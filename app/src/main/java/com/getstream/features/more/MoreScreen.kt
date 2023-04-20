@@ -6,15 +6,17 @@ import androidx.compose.material.icons.outlined.AccountCircle
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.SettingsSuggest
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.getstream.ui.core.TopBar
 import com.getstream.ui.core.UserRowItem
@@ -50,8 +52,29 @@ fun MoreScreen(
                 Preferences()
             }
         }
-
     }
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val state by lifecycleOwner.lifecycle.observeAsState()
+
+    LaunchedEffect(state) {
+        if (state == Lifecycle.Event.ON_RESUME) {
+            viewModel.refreshUser()
+        }
+    }
+}
+
+@Composable
+fun Lifecycle.observeAsState(): State<Lifecycle.Event> {
+    val state = remember { mutableStateOf(Lifecycle.Event.ON_ANY) }
+    DisposableEffect(this) {
+        val observer = LifecycleEventObserver { _, event ->
+            state.value = event
+        }
+        this@observeAsState.addObserver(observer)
+        onDispose { this@observeAsState.removeObserver(observer) }
+    }
+    return state
 }
 
 @Composable
