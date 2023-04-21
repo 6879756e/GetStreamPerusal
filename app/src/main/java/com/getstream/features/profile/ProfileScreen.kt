@@ -14,9 +14,6 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.HideImage
-import androidx.compose.material.icons.filled.PhotoCamera
-import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.outlined.AddAPhoto
 import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material.icons.outlined.Work
@@ -117,51 +114,42 @@ fun ProfileScreen(
 
                     Spacer(modifier = Modifier.height(40.dp))
 
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .clickable { onProfileImageChangeRequested(ProfileImageRequest.CAMERA) }
-                            .padding(8.dp),
-                    ) {
-                        Icon(imageVector = Icons.Default.PhotoCamera, contentDescription = "")
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "Take a picture",
-                            style = MaterialTheme.typography.titleMedium,
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
-                    Divider(modifier = Modifier.padding(4.dp))
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .clickable { onProfileImageChangeRequested(ProfileImageRequest.GALLERY) }
-                            .padding(8.dp)
-                    ) {
-                        Icon(imageVector = Icons.Default.PhotoLibrary, contentDescription = "")
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "Choose from gallery",
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                    }
-                    Divider(modifier = Modifier.padding(4.dp))
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .clickable { onProfileImageChangeRequested(ProfileImageRequest.CLEAR) }
-                            .padding(8.dp)
-                    ) {
-                        Icon(imageVector = Icons.Default.HideImage, contentDescription = "")
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = "Clear profile image",
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                    }
+                    ImageOptions(onProfileImageChangeRequested)
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun ImageOptions(onProfileImageChangeRequested: (ProfileImageRequest) -> Unit) {
+    ProfileImageRequest.values().forEachIndexed { index, profileImageRequest ->
+        ImageOptionItem(onProfileImageChangeRequested, profileImageRequest)
+
+        if (index != ProfileImageRequest.values().lastIndex) {
+            Divider(modifier = Modifier.padding(4.dp))
+        }
+    }
+}
+
+@Composable
+private fun ImageOptionItem(
+    onProfileImageChangeRequested: (ProfileImageRequest) -> Unit,
+    request: ProfileImageRequest
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .clickable { onProfileImageChangeRequested(request) }
+            .padding(8.dp),
+    ) {
+        Icon(imageVector = request.imageVector, contentDescription = "")
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+            text = request.text,
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.weight(1f)
+        )
     }
 }
 
@@ -211,7 +199,7 @@ private fun ProfilePhoto(
         ) {
             IconButton(
                 onClick = onImageClicked,
-                modifier = Modifier.padding(8.dp)
+                modifier = Modifier.padding(16.dp)
             ) {
                 Image(
                     imageVector = if (user.image.isEmpty()) Icons.Outlined.AddAPhoto else Icons.Outlined.Image,
