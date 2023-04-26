@@ -36,7 +36,10 @@ fun GetStreamPerusalNavHost(
             arguments = Chat.arguments
         ) {
             val cid = it.arguments?.getString(Chat.cidArg)
-            ChatScreen(cid)
+            ChatScreen(cid) {
+                navController.navigate(Home.route)
+                onDestinationChanged(Home)
+            }
         }
         composable(route = More.route) {
             MoreScreen(onUserClicked = { onUserClicked(it) })

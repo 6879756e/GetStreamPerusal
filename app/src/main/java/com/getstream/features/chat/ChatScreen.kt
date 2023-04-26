@@ -1,6 +1,10 @@
 package com.getstream.features.chat
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import io.getstream.chat.android.client.ChatClient
 import io.getstream.chat.android.client.api.models.querysort.QuerySortByField
@@ -11,23 +15,41 @@ import io.getstream.chat.android.compose.viewmodel.channels.ChannelViewModelFact
 
 @Composable
 fun ChatScreen(
-    cid: String? = null
+    cid: String? = null,
+    chatViewModel: ChatViewModel = hiltViewModel(),
+    onBackPressed: () -> Unit
 ) {
+    chatViewModel.setChannelId(cid)
+    val channelId by chatViewModel.channelId.collectAsStateWithLifecycle()
+
     ChatTheme {
-        if (cid == null) {
-            ChannelList(
-                viewModel = viewModel(
-                    factory =
-                    ChannelViewModelFactory(
-                        ChatClient.instance(),
-                        QuerySortByField.descByName("last_updated"),
-                        null
-//                        filters = Filters.contains(member) TODO: Filter for channels that user is included in
-                    )
-                )
+        channelId?.let {
+            MessagesScreen(
+                channelId = it,
+                onBackPressed = {
+                    chatViewModel.setChannelId(null)
+                }
             )
-        } else {
-            MessagesScreen(channelId = cid)
+        } ?: ChannelList(
+            viewModel = viewModel(
+                factory =
+                ChannelViewModelFactory(
+                    ChatClient.instance(),
+                    QuerySortByField.descByName("last_updated"),
+                    null
+                )
+            ),
+            onChannelClick = {
+                chatViewModel.setChannelId(it.cid)
+            },
+        )
+
+        BackHandler(true) {
+            if (channelId == null) {
+                onBackPressed()
+            } else {
+                chatViewModel.setChannelId(null)
+            }
         }
     }
 }
