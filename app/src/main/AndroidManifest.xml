@@ -43,11 +43,6 @@
         <activity
             android:name=".features.profile.ProfileActivity"
             android:theme="@style/Theme.GetStreamPerusal" />
-
-        <!--  Just for testing purposes -->
-        <activity android:name=".TestActivity"
-            android:exported="true"
-            android:theme="@style/Theme.GetStreamPerusal"/>
     </application>
 
 </manifest>
