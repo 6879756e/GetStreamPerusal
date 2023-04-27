@@ -49,42 +49,44 @@ fun HomeScreen(
         viewModel.toggleChannelCreateMode()
     }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        Column {
-            TopBar(title = "Colleagues") {
-                IconButton(onClick = {
-                    viewModel.toggleChannelCreateMode()
-                }) {
-                    Icon(
-                        imageVector = topBarState.imageVector,
-                        contentDescription = "",
-                        modifier = Modifier
-                            .size(48.dp)
-                            .padding(8.dp),
-                        tint = MaterialTheme.colorScheme.onPrimary
-                    )
+    Surface {
+        Box(modifier = Modifier.fillMaxSize()) {
+            Column {
+                TopBar(title = "Colleagues") {
+                    IconButton(onClick = {
+                        viewModel.toggleChannelCreateMode()
+                    }) {
+                        Icon(
+                            imageVector = topBarState.imageVector,
+                            contentDescription = "",
+                            modifier = Modifier
+                                .size(48.dp)
+                                .padding(8.dp),
+                            tint = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
                 }
+
+                UsersList(users = users,
+                    isUserSelectState = isChannelCreateMode,
+                    selectedUsers = selectedUsers.keys,
+                    onClick = { if (!isChannelCreateMode) { onUserClicked(it) } },
+                    onLongClick = { if (!isChannelCreateMode) viewModel.startChannelCreateMode() }) { user, isSelected ->
+                    viewModel.setUserSelected(user, isSelected)
+                }
+
             }
 
-            UsersList(users = users,
-                isUserSelectState = isChannelCreateMode,
-                selectedUsers = selectedUsers.keys,
-                onClick = { if (!isChannelCreateMode) { onUserClicked(it) } },
-                onLongClick = { if (!isChannelCreateMode) viewModel.startChannelCreateMode() }) { user, isSelected ->
-                viewModel.setUserSelected(user, isSelected)
+            Animate(buttonVisibility) {
+                CreateChannelButton(onClick = {
+                    viewModel.createChannel(onSuccess = { onChannelCreated(it) })
+                })
             }
 
-        }
-
-        Animate(buttonVisibility) {
-            CreateChannelButton(onClick = {
-                viewModel.createChannel(onSuccess = { onChannelCreated(it) })
-            })
-        }
-
-        val isChannelBeingCreated by viewModel.isChannelBeingCreated.collectAsStateWithLifecycle()
-        if (isChannelBeingCreated) {
-            CircularIndicatorWithDimmedBackground()
+            val isChannelBeingCreated by viewModel.isChannelBeingCreated.collectAsStateWithLifecycle()
+            if (isChannelBeingCreated) {
+                CircularIndicatorWithDimmedBackground()
+            }
         }
     }
 }
