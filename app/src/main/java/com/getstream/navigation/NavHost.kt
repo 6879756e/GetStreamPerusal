@@ -1,11 +1,16 @@
 package com.getstream.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.getstream.features.chat.ChannelRoomState
 import com.getstream.features.chat.ChatScreen
+import com.getstream.features.chat.ChatViewModel
 import com.getstream.features.home.HomeScreen
 import com.getstream.features.more.MoreScreen
 import io.getstream.chat.android.client.models.User
@@ -16,6 +21,7 @@ fun GetStreamPerusalNavHost(
     modifier: Modifier,
     onDestinationChanged: (Destination) -> Unit,
     onUserClicked: (User) -> Unit,
+    onChannelRoomStateChanged: (ChannelRoomState) -> Unit,
 ) {
     NavHost(
         navController = navController,
@@ -35,11 +41,28 @@ fun GetStreamPerusalNavHost(
             route = Chat.route,
             arguments = Chat.arguments
         ) {
-            val cid = it.arguments?.getString(Chat.cidArg)
-            ChatScreen(cid) {
-                navController.navigate(Home.route)
-                onDestinationChanged(Home)
-            }
+            val chatViewModel = hiltViewModel<ChatViewModel>()
+
+            it.arguments?.getString(Chat.cidArg)?.let { cid -> chatViewModel.setChannelId(cid) }
+
+            val channelId by chatViewModel.channelId.collectAsStateWithLifecycle()
+
+            ChatScreen(
+                channelId,
+                onBackPressed = {
+                    navController.navigate(Home.route) {
+                        popUpTo(Chat.route) {
+                            inclusive = true
+                        }
+                        launchSingleTop = true
+                    }
+                    onDestinationChanged(Home)
+                },
+                onChannelRoomStateChanged = { channelRoomState ->
+                    onChannelRoomStateChanged(channelRoomState)
+                    chatViewModel.setChannelId(channelRoomState.cid)
+                }
+            )
         }
         composable(route = More.route) {
             MoreScreen(onUserClicked = { onUserClicked(it) })

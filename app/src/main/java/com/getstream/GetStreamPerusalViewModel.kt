@@ -24,6 +24,7 @@ class GetStreamPerusalViewModel @Inject constructor(
     private val isLoginRequired = MutableStateFlow(false)
 
     val clientState = MutableStateFlow(InitializationState.NOT_INITIALIZED)
+    val fullScreenMode = MutableStateFlow(false)
 
     private val jwtToken: Flow<String> = dataStoreRepository.getUserJwtToken()
     private val emailAddress: Flow<String> = dataStoreRepository.getUserEmail()
@@ -61,5 +62,9 @@ class GetStreamPerusalViewModel @Inject constructor(
     }
 
     fun isLoginRequired(): LiveData<Boolean> = isLoginRequired.asLiveData()
+
+    fun setFullScreenMode(isFullScreenMode: Boolean) {
+        fullScreenMode.value = isFullScreenMode
+    }
 
 }

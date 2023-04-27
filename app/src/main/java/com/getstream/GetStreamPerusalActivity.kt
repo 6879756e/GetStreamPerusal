@@ -18,6 +18,7 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.getstream.features.USER_ID_KEY
+import com.getstream.features.chat.ChannelRoomState
 import com.getstream.features.profile.ProfileActivity
 import com.getstream.login.LoginActivity
 import com.getstream.navigation.Destination
@@ -47,13 +48,18 @@ class GetStreamPerusalActivity : ComponentActivity() {
         setContent {
             GetStreamPerusalTheme {
                 val clientState by getStreamPerusalViewModel.clientState.collectAsStateWithLifecycle()
+                val fullScreenMode by getStreamPerusalViewModel.fullScreenMode.collectAsStateWithLifecycle()
 
                 if (clientState == InitializationState.COMPLETE) {
                     val navController = rememberNavController()
 
                     GetStreamPerusalActivityScreen(
                         navController = navController,
-                        onUserClicked = { startDetailedProfileActivity(it) }
+                        fullScreenMode = fullScreenMode,
+                        onUserClicked = { startDetailedProfileActivity(it) },
+                        onChannelRoomStateChanged = { channelRoomState ->
+                            getStreamPerusalViewModel.setFullScreenMode(channelRoomState is ChannelRoomState.Entered)
+                        }
                     )
 
                     content.viewTreeObserver.removeOnPreDrawListener(onFinishLoadingListener)
@@ -81,7 +87,9 @@ class GetStreamPerusalActivity : ComponentActivity() {
     @Composable
     fun GetStreamPerusalActivityScreen(
         navController: NavHostController,
+        fullScreenMode: Boolean,
         modifier: Modifier = Modifier,
+        onChannelRoomStateChanged: (ChannelRoomState) -> Unit,
         onUserClicked: (User) -> Unit,
     ) {
         var currentDestination by remember { mutableStateOf<Destination>(Home) }
@@ -95,21 +103,24 @@ class GetStreamPerusalActivity : ComponentActivity() {
                 onDestinationChanged = {
                     currentDestination = it
                 },
-                onUserClicked = onUserClicked
+                onUserClicked = onUserClicked,
+                onChannelRoomStateChanged = onChannelRoomStateChanged
             )
 
-            GetStreamPerusalBottomNavigation(
-                currentDestination = currentDestination,
-                onItemClicked = {
-                    currentDestination = it
-                    navController.navigate(it.route) {
-                        popUpTo(navController.graph.findStartDestination().id) {
-                            inclusive = true
+            if (!fullScreenMode) {
+                GetStreamPerusalBottomNavigation(
+                    currentDestination = currentDestination,
+                    onItemClicked = {
+                        currentDestination = it
+                        navController.navigate(it.route) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                inclusive = true
+                            }
+                            launchSingleTop = true
                         }
-                        launchSingleTop = true
                     }
-                }
-            )
+                )
+            }
         }
     }
 }
