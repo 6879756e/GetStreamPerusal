@@ -1,9 +1,6 @@
 package com.getstream.features.profile
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.slideIn
-import androidx.compose.animation.slideOut
+import androidx.compose.animation.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -193,8 +190,8 @@ private fun ProfilePhoto(
 
         AnimatedVisibility(
             visible = isEditMode,
-            enter = slideIn { IntOffset(0, it.height) },
-            exit = slideOut { IntOffset(0, it.height) },
+            enter = slideIn { IntOffset(0, it.height) } + fadeIn(),
+            exit = slideOut { IntOffset(0, it.height) } + fadeOut(),
             modifier = Modifier.align(Alignment.BottomEnd)
         ) {
             IconButton(
