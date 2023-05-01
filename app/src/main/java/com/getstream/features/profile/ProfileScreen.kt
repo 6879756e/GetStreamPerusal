@@ -248,7 +248,10 @@ private fun UserName(
         value = textFieldValue,
         onValueChange = onValueChange,
         enabled = isEditMode,
-        textStyle = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
+        textStyle = MaterialTheme.typography.headlineMedium.copy(
+            fontWeight = FontWeight.Bold,
+            color = LocalContentColor.current
+        ),
         keyboardActions = KeyboardActions(onDone = {
             focusManager.moveFocusDown()
         }),
@@ -269,7 +272,10 @@ private fun Status(
         value = textFieldValue,
         onValueChange = onValueChange,
         enabled = isEditMode,
-        textStyle = MaterialTheme.typography.bodyMedium.copy(fontStyle = FontStyle.Italic),
+        textStyle = MaterialTheme.typography.bodyMedium.copy(
+            fontStyle = FontStyle.Italic,
+            color = LocalContentColor.current
+        ),
         keyboardActions = KeyboardActions(onDone = {
             focusManager.moveFocusDown()
         }),
@@ -297,7 +303,7 @@ private fun Job(
             value = textFieldValue,
             onValueChange = onValueChange,
             enabled = isEditMode,
-            textStyle = MaterialTheme.typography.bodyMedium,
+            textStyle = MaterialTheme.typography.bodyMedium.copy(color = LocalContentColor.current),
             keyboardActions = KeyboardActions(onDone = {
                 focusManager.clearFocus()
             }),
